@@ -1,0 +1,765 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Reference fixtures verified in Python; application tests not yet implemented",
+  "cases": [
+    {
+      "id": "MAT-01",
+      "operation": "rref",
+      "input": {
+        "matrix": [
+          [
+            "1",
+            "2",
+            "-1",
+            "3"
+          ],
+          [
+            "2",
+            "4",
+            "1",
+            "8"
+          ],
+          [
+            "-1",
+            "-2",
+            "3",
+            "2"
+          ]
+        ]
+      },
+      "expected": {
+        "matrix": [
+          [
+            "1",
+            "2",
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "1",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "0",
+            "1"
+          ]
+        ]
+      },
+      "source": "Course reference MAT-01"
+    },
+    {
+      "id": "MAT-02",
+      "operation": "solve",
+      "input": {
+        "matrix": [
+          [
+            "2",
+            "3",
+            "-1"
+          ],
+          [
+            "4",
+            "4",
+            "-3"
+          ],
+          [
+            "2",
+            "-3",
+            "1"
+          ]
+        ],
+        "rhs": [
+          [
+            "5"
+          ],
+          [
+            "3"
+          ],
+          [
+            "-1"
+          ]
+        ]
+      },
+      "expected": {
+        "classification": "unique",
+        "solution": [
+          [
+            "1"
+          ],
+          [
+            "2"
+          ],
+          [
+            "3"
+          ]
+        ]
+      },
+      "source": "Course reference MAT-02"
+    },
+    {
+      "id": "MAT-04",
+      "operation": "inverse",
+      "input": {
+        "matrix": [
+          [
+            "1",
+            "0",
+            "2"
+          ],
+          [
+            "2",
+            "1",
+            "3"
+          ],
+          [
+            "4",
+            "1",
+            "8"
+          ]
+        ]
+      },
+      "expected": {
+        "matrix": [
+          [
+            "5",
+            "2",
+            "-2"
+          ],
+          [
+            "-4",
+            "0",
+            "1"
+          ],
+          [
+            "-2",
+            "-1",
+            "1"
+          ]
+        ]
+      },
+      "source": "Course reference MAT-04"
+    },
+    {
+      "id": "MAT-05-1",
+      "operation": "solve",
+      "input": {
+        "matrix": [
+          [
+            "3",
+            "1",
+            "0"
+          ],
+          [
+            "1",
+            "2",
+            "1"
+          ],
+          [
+            "0",
+            "-1",
+            "2"
+          ]
+        ],
+        "rhs": [
+          [
+            "1"
+          ],
+          [
+            "0"
+          ],
+          [
+            "0"
+          ]
+        ]
+      },
+      "expected": {
+        "classification": "unique",
+        "solution": [
+          [
+            "5/13"
+          ],
+          [
+            "-2/13"
+          ],
+          [
+            "-1/13"
+          ]
+        ]
+      },
+      "source": "Course reference MAT-05-1"
+    },
+    {
+      "id": "MAT-05-2",
+      "operation": "solve",
+      "input": {
+        "matrix": [
+          [
+            "3",
+            "1",
+            "0"
+          ],
+          [
+            "1",
+            "2",
+            "1"
+          ],
+          [
+            "0",
+            "-1",
+            "2"
+          ]
+        ],
+        "rhs": [
+          [
+            "2"
+          ],
+          [
+            "1"
+          ],
+          [
+            "3"
+          ]
+        ]
+      },
+      "expected": {
+        "classification": "unique",
+        "solution": [
+          [
+            "11/13"
+          ],
+          [
+            "-7/13"
+          ],
+          [
+            "16/13"
+          ]
+        ]
+      },
+      "source": "Course reference MAT-05-2"
+    },
+    {
+      "id": "MAT-05-3",
+      "operation": "solve",
+      "input": {
+        "matrix": [
+          [
+            "3",
+            "1",
+            "0"
+          ],
+          [
+            "1",
+            "2",
+            "1"
+          ],
+          [
+            "0",
+            "-1",
+            "2"
+          ]
+        ],
+        "rhs": [
+          [
+            "0"
+          ],
+          [
+            "-1"
+          ],
+          [
+            "4"
+          ]
+        ]
+      },
+      "expected": {
+        "classification": "unique",
+        "solution": [
+          [
+            "6/13"
+          ],
+          [
+            "-18/13"
+          ],
+          [
+            "17/13"
+          ]
+        ]
+      },
+      "source": "Course reference MAT-05-3"
+    },
+    {
+      "id": "PV-01",
+      "operation": "cross",
+      "input": {
+        "a": [
+          "2",
+          "-1",
+          "3"
+        ],
+        "b": [
+          "0",
+          "4",
+          "-2"
+        ]
+      },
+      "expected": {
+        "vector": [
+          "-10",
+          "4",
+          "8"
+        ],
+        "squaredNorm": "180"
+      },
+      "source": "Course reference PV-01"
+    },
+    {
+      "id": "PV-02",
+      "operation": "cross",
+      "input": {
+        "a": [
+          "0",
+          "4",
+          "-2"
+        ],
+        "b": [
+          "2",
+          "-1",
+          "3"
+        ]
+      },
+      "expected": {
+        "vector": [
+          "10",
+          "-4",
+          "-8"
+        ],
+        "squaredNorm": "180"
+      },
+      "source": "Course reference PV-02"
+    },
+    {
+      "id": "PV-08",
+      "operation": "cross",
+      "input": {
+        "a": [
+          "3",
+          "1",
+          "-2"
+        ],
+        "b": [
+          "1",
+          "2",
+          "4"
+        ]
+      },
+      "expected": {
+        "vector": [
+          "8",
+          "-14",
+          "5"
+        ],
+        "squaredNorm": "285"
+      },
+      "source": "Course reference PV-08"
+    },
+    {
+      "id": "PV-09",
+      "operation": "cross",
+      "input": {
+        "a": [
+          "1",
+          "3",
+          "-1"
+        ],
+        "b": [
+          "-1",
+          "1",
+          "3"
+        ]
+      },
+      "expected": {
+        "vector": [
+          "10",
+          "-2",
+          "4"
+        ],
+        "squaredNorm": "120",
+        "squaredArea": "30"
+      },
+      "source": "Course reference PV-09"
+    },
+    {
+      "id": "PV-10",
+      "operation": "cross",
+      "input": {
+        "a": [
+          "1",
+          "-1",
+          "2"
+        ],
+        "b": [
+          "3",
+          "0",
+          "1"
+        ]
+      },
+      "expected": {
+        "vector": [
+          "-1",
+          "5",
+          "3"
+        ],
+        "squaredNorm": "35"
+      },
+      "source": "Course reference PV-10"
+    },
+    {
+      "id": "PV-11",
+      "operation": "cross",
+      "input": {
+        "a": [
+          "0",
+          "2",
+          "1"
+        ],
+        "b": [
+          "2",
+          "-1",
+          "3"
+        ]
+      },
+      "expected": {
+        "vector": [
+          "7",
+          "2",
+          "-4"
+        ],
+        "squaredNorm": "69"
+      },
+      "source": "Course reference PV-11"
+    },
+    {
+      "id": "PV-03",
+      "operation": "crossDistributivity",
+      "input": {
+        "a": [
+          "1",
+          "0",
+          "2"
+        ],
+        "b": [
+          "-1",
+          "3",
+          "1"
+        ],
+        "c": [
+          "2",
+          "2",
+          "0"
+        ]
+      },
+      "expected": {
+        "vector": [
+          "-10",
+          "1",
+          "5"
+        ]
+      },
+      "source": "Course reference PV-03"
+    },
+    {
+      "id": "PV-04",
+      "operation": "lagrange",
+      "input": {
+        "a": [
+          "1",
+          "2",
+          "2"
+        ],
+        "b": [
+          "3",
+          "0",
+          "4"
+        ]
+      },
+      "expected": {
+        "value": "104"
+      },
+      "source": "Course reference PV-04"
+    },
+    {
+      "id": "PV-13",
+      "operation": "triple",
+      "input": {
+        "a": [
+          "1",
+          "2",
+          "3"
+        ],
+        "b": [
+          "0",
+          "1",
+          "4"
+        ],
+        "c": [
+          "2",
+          "0",
+          "-1"
+        ]
+      },
+      "expected": {
+        "signedValue": "9",
+        "parallelepipedVolume": "9",
+        "tetrahedronVolume": "3/2",
+        "coplanar": false
+      },
+      "source": "Course reference PV-13"
+    },
+    {
+      "id": "PV-14",
+      "operation": "triple",
+      "input": {
+        "a": [
+          "2",
+          "0",
+          "1"
+        ],
+        "b": [
+          "1",
+          "3",
+          "0"
+        ],
+        "c": [
+          "0",
+          "1",
+          "4"
+        ]
+      },
+      "expected": {
+        "signedValue": "25",
+        "parallelepipedVolume": "25",
+        "tetrahedronVolume": "25/6",
+        "coplanar": false
+      },
+      "source": "Course reference PV-14"
+    },
+    {
+      "id": "PV-15",
+      "operation": "triple",
+      "input": {
+        "a": [
+          "1",
+          "2",
+          "3"
+        ],
+        "b": [
+          "-1",
+          "4",
+          "0"
+        ],
+        "c": [
+          "2",
+          "0",
+          "1"
+        ]
+      },
+      "expected": {
+        "signedValue": "-18",
+        "parallelepipedVolume": "18",
+        "tetrahedronVolume": "3",
+        "coplanar": false
+      },
+      "source": "Course reference PV-15"
+    },
+    {
+      "id": "PV-16",
+      "operation": "triple",
+      "input": {
+        "a": [
+          "1",
+          "2",
+          "0"
+        ],
+        "b": [
+          "0",
+          "1",
+          "3"
+        ],
+        "c": [
+          "2",
+          "0",
+          "1"
+        ]
+      },
+      "expected": {
+        "signedValue": "13",
+        "parallelepipedVolume": "13",
+        "tetrahedronVolume": "13/6",
+        "coplanar": false
+      },
+      "source": "Course reference PV-16"
+    },
+    {
+      "id": "PV-19",
+      "operation": "bacCab",
+      "input": {
+        "a": [
+          "1",
+          "0",
+          "1"
+        ],
+        "b": [
+          "2",
+          "1",
+          "0"
+        ],
+        "c": [
+          "0",
+          "1",
+          "1"
+        ]
+      },
+      "expected": {
+        "vector": [
+          "2",
+          "-1",
+          "-2"
+        ]
+      },
+      "source": "Course reference PV-19"
+    },
+    {
+      "id": "VET-05",
+      "operation": "dot",
+      "input": {
+        "a": [
+          "2",
+          "-1",
+          "3"
+        ],
+        "b": [
+          "4",
+          "2",
+          "-1"
+        ]
+      },
+      "expected": {
+        "value": "3",
+        "normSquaredA": "14",
+        "normSquaredB": "21"
+      },
+      "source": "Course reference VET-05"
+    },
+    {
+      "id": "VET-07",
+      "operation": "dot",
+      "input": {
+        "a": [
+          "1",
+          "0",
+          "-1",
+          "2"
+        ],
+        "b": [
+          "3",
+          "-2",
+          "1",
+          "0"
+        ]
+      },
+      "expected": {
+        "value": "2",
+        "normSquaredA": "6",
+        "normSquaredB": "14"
+      },
+      "source": "Course reference VET-07"
+    },
+    {
+      "id": "VET-14",
+      "operation": "projection",
+      "input": {
+        "a": [
+          "1",
+          "2",
+          "2"
+        ],
+        "direction": [
+          "1",
+          "1",
+          "0"
+        ]
+      },
+      "expected": {
+        "projection": [
+          "3/2",
+          "3/2",
+          "0"
+        ],
+        "residual": [
+          "-1/2",
+          "1/2",
+          "2"
+        ],
+        "squaredDistance": "9/2"
+      },
+      "source": "Course reference VET-14"
+    },
+    {
+      "id": "NOTE-DET-01",
+      "operation": "determinant",
+      "input": {
+        "matrix": [
+          [
+            "3",
+            "1",
+            "-2"
+          ],
+          [
+            "-5",
+            "4",
+            "-6"
+          ],
+          [
+            "0",
+            "2",
+            "7"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "175"
+      },
+      "source": "Course reference NOTE-DET-01"
+    },
+    {
+      "id": "NOTE-DET-02",
+      "operation": "determinant",
+      "input": {
+        "matrix": [
+          [
+            "5",
+            "9",
+            "3"
+          ],
+          [
+            "7",
+            "1",
+            "0"
+          ],
+          [
+            "4",
+            "11",
+            "2"
+          ]
+        ]
+      },
+      "expected": {
+        "value": "103"
+      },
+      "source": "Course reference NOTE-DET-02"
+    }
+  ]
+}
