@@ -10,26 +10,26 @@ Código e nomes técnicos em inglês; interface e explicações de revisão em p
 
 ## Sequência proposta
 
-| PR planejado | Entrega concreta | Verificação e foco da revisão |
-|---|---|---|
-| 01 — `docs: define v1 scope and acceptance` | Especificação, mapa de cobertura sanitizado para o repositório, decisões e limites | Conferir o que entra, os métodos e as exclusões por exercício. Referências locais detalhadas permanecem fora do remoto |
-| 02 — `chore: scaffold workspace and ci` | React/Vite/TS, pacotes do núcleo/contratos, lockfile, ESLint, Prettier, Vitest e GitHub Actions | Instalação limpa, typecheck e build; fronteiras de dependência. Sem versões de bibliotecas escolhidas apenas de memória |
-| 03 — `feat: add exact rational input` | Adaptador racional, parser de escalares, formatos persistidos e validação de dimensões | Decimais exatos, negativos, denominador zero, limites e conversão JSON sem perda |
-| 04 — `feat: solve systems with gaussian elimination` | Gauss, retrospectiva de operações e classificação SPD/SPI/SI | MAT-02; sistemas retangulares; pivô inicial zero; SPI de D1 p.3; substituição e replay das etapas |
-| 05 — `feat: show interactive solution steps` | Grade, seleção de método, KaTeX, pivôs e navegação por etapas | Primeiro fluxo completo de cálculo; teclado; estados antigos imutáveis; matriz aumentada legível |
-| 06 — `feat: add gauss jordan and inverse` | Forma reduzida, posto e inversa | MAT-01/MAT-04; ambas as identidades com inversa; singularidade |
-| 07 — `feat: add email authentication` | Cadastro, confirmação, login, logout e recuperação de senha | Fluxos em ambiente de teste; retorno de autenticação; mensagens de erro; nenhuma senha no histórico |
-| 08 — `feat: sync calculation history` | Migrações, RLS, salvar/listar/reabrir/excluir | Duas contas reais de teste; duas sessões/dispositivos; impedir acesso cruzado; repetição de salvamento; falha de rede |
-| 09 — `feat: add basic matrix operations` | Soma, subtração, escalar, produto e transposta | Exemplos A1; dimensões incompatíveis; propriedades e produto linha/coluna exibido |
-| 10 — `feat: add determinant methods` | Ordem 1/2, Sarrus, Laplace, triangularização | NOTE-DET-01/02; sinal de trocas, fatores de escala, singularidade; Sarrus indisponível fora de 3×3 |
-| 11 — `feat: add cramer and adjugate methods` | Cramer, inversa por adjunta e solução via inversa | MAT-05-1..3; concordância entre métodos; restrições de aplicabilidade e de tamanho |
-| 12 — `feat: add vector arithmetic and projection` | Soma, escalar, produto escalar, norma, normalização, ângulo e projeção | VET-05/07/14, V-Q12; saída com raiz; projeção sobre zero e ângulo de vetor zero |
-| 13 — `feat: add span and basis analysis` | Combinação linear, LI/LD, base de Rⁿ e base do espaço gerado | Colunas originais; relação de dependência verificável; alvo fora do espaço; base vazia e redundância |
-| 14 — `feat: add cross product geometry` | Produto vetorial, normal, áreas e etapas | PV-01..04 e PV-08..11; ortogonalidade; ordem dos fatores; área não negativa |
-| 15 — `feat: add triple product geometry` | Produto misto, volumes e coplanaridade | PV-13..16 e PV-19; determinante versus produto composto; pontos com mesma origem |
-| 16 — `feat: parse equations and pasted matrices` | Entrada tabular e equações, prévia e alternância com grade | Separador decimal inequívoco; termos repetidos; rejeição de não linearidade; conservação de entradas |
-| 17 — `feat: export and import calculations` | Impressão/PDF e JSON versionado | A4 real sem corte; ida e volta exata; versão desconhecida; dados adulterados e limite de arquivo |
-| 18 — `test: complete v1 acceptance and release docs` | Cobertura restante das listas, acessibilidade, documentação operacional e publicação preparada | Todos os aceites; histórico entre dispositivos; recuperação de senha e e-mails no ambiente final; build reproduzível |
+| PR planejado                                         | Entrega concreta                                                                                | Verificação e foco da revisão                                                                                           |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 01 — `docs: define v1 scope and acceptance`          | Especificação, mapa de cobertura sanitizado para o repositório, decisões e limites              | Conferir o que entra, os métodos e as exclusões por exercício. Referências locais detalhadas permanecem fora do remoto  |
+| 02 — `chore: scaffold workspace and ci`              | React/Vite/TS, pacotes do núcleo/contratos, lockfile, ESLint, Prettier, Vitest e GitHub Actions | Instalação limpa, typecheck e build; fronteiras de dependência. Sem versões de bibliotecas escolhidas apenas de memória |
+| 03 — `feat: add exact rational input`                | Adaptador racional, parser de escalares, formatos persistidos e validação de dimensões          | Decimais exatos, negativos, denominador zero, limites e conversão JSON sem perda                                        |
+| 04 — `feat: solve systems with gaussian elimination` | Gauss, retrospectiva de operações e classificação SPD/SPI/SI                                    | MAT-02; sistemas retangulares; pivô inicial zero; SPI de D1 p.3; substituição e replay das etapas                       |
+| 05 — `feat: show interactive solution steps`         | Grade, seleção de método, KaTeX, pivôs e navegação por etapas                                   | Primeiro fluxo completo de cálculo; teclado; estados antigos imutáveis; matriz aumentada legível                        |
+| 06 — `feat: add gauss jordan and inverse`            | Forma reduzida, posto e inversa                                                                 | MAT-01/MAT-04; ambas as identidades com inversa; singularidade                                                          |
+| 07 — `feat: add email authentication`                | Cadastro, confirmação, login, logout e recuperação de senha                                     | Fluxos em ambiente de teste; retorno de autenticação; mensagens de erro; nenhuma senha no histórico                     |
+| 08 — `feat: sync calculation history`                | Migrações, RLS, salvar/listar/reabrir/excluir                                                   | Duas contas reais de teste; duas sessões/dispositivos; impedir acesso cruzado; repetição de salvamento; falha de rede   |
+| 09 — `feat: add basic matrix operations`             | Soma, subtração, escalar, produto e transposta                                                  | Exemplos A1; dimensões incompatíveis; propriedades e produto linha/coluna exibido                                       |
+| 10 — `feat: add determinant methods`                 | Ordem 1/2, Sarrus, Laplace, triangularização                                                    | NOTE-DET-01/02; sinal de trocas, fatores de escala, singularidade; Sarrus indisponível fora de 3×3                      |
+| 11 — `feat: add cramer and adjugate methods`         | Cramer, inversa por adjunta e solução via inversa                                               | MAT-05-1..3; concordância entre métodos; restrições de aplicabilidade e de tamanho                                      |
+| 12 — `feat: add vector arithmetic and projection`    | Soma, escalar, produto escalar, norma, normalização, ângulo e projeção                          | VET-05/07/14, V-Q12; saída com raiz; projeção sobre zero e ângulo de vetor zero                                         |
+| 13 — `feat: add span and basis analysis`             | Combinação linear, LI/LD, base de Rⁿ e base do espaço gerado                                    | Colunas originais; relação de dependência verificável; alvo fora do espaço; base vazia e redundância                    |
+| 14 — `feat: add cross product geometry`              | Produto vetorial, normal, áreas e etapas                                                        | PV-01..04 e PV-08..11; ortogonalidade; ordem dos fatores; área não negativa                                             |
+| 15 — `feat: add triple product geometry`             | Produto misto, volumes e coplanaridade                                                          | PV-13..16 e PV-19; determinante versus produto composto; pontos com mesma origem                                        |
+| 16 — `feat: parse equations and pasted matrices`     | Entrada tabular e equações, prévia e alternância com grade                                      | Separador decimal inequívoco; termos repetidos; rejeição de não linearidade; conservação de entradas                    |
+| 17 — `feat: export and import calculations`          | Impressão/PDF e JSON versionado                                                                 | A4 real sem corte; ida e volta exata; versão desconhecida; dados adulterados e limite de arquivo                        |
+| 18 — `test: complete v1 acceptance and release docs` | Cobertura restante das listas, acessibilidade, documentação operacional e publicação preparada  | Todos os aceites; histórico entre dispositivos; recuperação de senha e e-mails no ambiente final; build reproduzível    |
 
 Os números são ordem de planejamento, não números reais de PR no GitHub. A V1 inclui todos os módulos aprovados, mesmo que a primeira fatia funcional seja apenas Gauss. Autenticação/histórico entram cedo para validar o maior requisito de infraestrutura antes de terminar todos os módulos.
 
@@ -56,8 +56,8 @@ Os números são ordem de planejamento, não números reais de PR no GitHub. A V
 
 ## Configurações externas necessárias antes da implementação publicada
 
-O nome e a visibilidade já estão definidos: `linear-steps`, público. Ainda é necessário criar o remoto na conta GitHub apropriada e disponibilizar acesso de escrita para branches e PRs. Isso não impede revisar estes documentos ou preparar o código local.
+O nome e a visibilidade já estão definidos: `linear-steps`, público. O remoto está em https://github.com/gabreel05/linear-steps. O envio de branches exige autenticação do Git local na conta do responsável.
 
 O projeto Supabase precisará de ambiente de desenvolvimento, migrações, configuração de autenticação e entrega de e-mail. Segredos devem ser configurados no ambiente, nunca enviados em PRs ou colocados na documentação. O provedor de hospedagem do frontend permanece a definir no preparo da publicação; a arquitetura é uma aplicação estática com backend Supabase.
 
-Não foi escolhida uma licença de software nesta etapa. Repositório público e licença são decisões diferentes; a licença será discutida antes da primeira publicação de código. Nenhum recurso pago foi contratado, repositório criado ou deploy realizado nesta entrega.
+Não foi escolhida uma licença de software nesta etapa. Repositório público e licença são decisões diferentes; a licença será discutida separadamente. Nenhum recurso pago foi contratado ou deploy realizado nesta entrega.

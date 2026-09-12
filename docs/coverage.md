@@ -2,19 +2,19 @@
 
 O mapeamento detalhado dos PDFs é uma referência local do projeto. Esta versão pública registra apenas IDs e requisitos, sem reproduzir os documentos originais.
 
-| Grupo | Aceite |
-|---|---|
-| MAT-01 | Forma reduzida de matriz retangular, posto e etapas |
-| MAT-02 | Gauss com retrosubstituição, resultado exato e substituição nas equações |
-| MAT-04 | Inversa por Gauss–Jordan, verificação dos dois produtos com a original |
-| MAT-05-1..3 | Sistemas resolvidos por inversa, três vetores independentes |
-| VET-05/07 | Produto escalar e normas, inclusive em R⁴ |
-| VET-14 | Projeção, resíduo ortogonal e distância |
-| PV-01..04 | Produto vetorial e verificação numérica de identidades |
-| PV-08..11 | Área, normal e produto vetorial aplicado |
-| PV-13..16 | Produto misto, volumes e coplanaridade |
-| PV-19 | Verificação numérica da identidade BAC–CAB |
-| NOTE-DET-01/02 | Determinantes por métodos diferentes |
+| Grupo          | Aceite                                                                   |
+| -------------- | ------------------------------------------------------------------------ |
+| MAT-01         | Forma reduzida de matriz retangular, posto e etapas                      |
+| MAT-02         | Gauss com retrosubstituição, resultado exato e substituição nas equações |
+| MAT-04         | Inversa por Gauss–Jordan, verificação dos dois produtos com a original   |
+| MAT-05-1..3    | Sistemas resolvidos por inversa, três vetores independentes              |
+| VET-05/07      | Produto escalar e normas, inclusive em R⁴                                |
+| VET-14         | Projeção, resíduo ortogonal e distância                                  |
+| PV-01..04      | Produto vetorial e verificação numérica de identidades                   |
+| PV-08..11      | Área, normal e produto vetorial aplicado                                 |
+| PV-13..16      | Produto misto, volumes e coplanaridade                                   |
+| PV-19          | Verificação numérica da identidade BAC–CAB                               |
+| NOTE-DET-01/02 | Determinantes por métodos diferentes                                     |
 
 Os 24 casos em `tests/fixtures/reference-cases.json` são referências previamente conferidas, não uma implementação de testes. Nos respectivos PRs, transformá-los em testes do resultado e das etapas.
 
