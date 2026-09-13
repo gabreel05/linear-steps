@@ -11,7 +11,7 @@ Aplicação em desenvolvimento, com foco em matrizes, sistemas lineares, vetores
 - [Plano de entregas](docs/delivery-plan.md)
 - [Decisão de arquitetura](docs/decisions/001-architecture.md)
 
-Os materiais originais do curso permanecem fora deste repositório. Os casos matemáticos de referência estão em `tests/fixtures/reference-cases.json` e ainda não representam testes executados da aplicação.
+Os materiais originais do curso permanecem fora deste repositório. Os casos matemáticos de referência estão em `tests/fixtures/reference-cases.json`; a cobertura já executada está registrada em `docs/coverage.md`.
 
 ## Desenvolvimento local
 
@@ -22,7 +22,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-A interface inicial identifica os módulos planejados; os algoritmos de resolução e a autenticação serão implementados nas próximas entregas. O núcleo já oferece frações exatas e validação de entradas escalares, vetores, matrizes e sistemas, com testes independentes da interface. Ainda não é necessário configurar Supabase para executar essa estrutura.
+A interface inicial identifica os módulos planejados. O núcleo já oferece frações exatas, validação de entradas e solução de sistemas por Gauss com etapas estruturadas, com testes independentes da interface. A tela interativa de resolução e a autenticação serão implementadas nas próximas entregas. Ainda não é necessário configurar Supabase para executar essa estrutura.
 
 ```sh
 pnpm check       # formatação, lint, testes e build com verificação de tipos
@@ -44,6 +44,24 @@ restored.equals(result); // true
 ```
 
 Os formatos aceitos e os limites estão no [ADR de entrada racional](docs/decisions/002-exact-rational-input.md).
+
+Para resolver um sistema no núcleo:
+
+```ts
+import { solveGaussian } from '@linear-steps/math-core';
+
+const resolution = solveGaussian(
+  [
+    ['1', '1'],
+    ['2', '2'],
+  ],
+  ['2', '4'],
+);
+// classification: 'infinite'; x = (2, 0) + t₁(-1, 1)
+// resolution.steps contém matrizes, pivôs e operações serializáveis.
+```
+
+O [ADR de Gauss](docs/decisions/003-gaussian-elimination.md) explica o contrato das etapas e as três classificações.
 
 ## Revisão
 

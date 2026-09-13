@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "purpose": "Reference fixtures verified in Python; application tests not yet implemented",
+  "purpose": "Reference fixtures verified in Python; implemented algorithm coverage is tracked in docs/coverage.md",
   "cases": [
     {
       "id": "MAT-01",

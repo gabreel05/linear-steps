@@ -1,4 +1,5 @@
 export { Rational } from './rational';
+export { solveGaussian } from './gaussian';
 export { MathInputError, type MathErrorCode } from './errors';
 export {
   parseScalar,
