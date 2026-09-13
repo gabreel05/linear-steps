@@ -16,7 +16,7 @@ O mapeamento detalhado dos PDFs é uma referência local do projeto. Esta versã
 | PV-19          | Verificação numérica da identidade BAC–CAB                               |
 | NOTE-DET-01/02 | Determinantes por métodos diferentes                                     |
 
-Os 24 casos em `tests/fixtures/reference-cases.json` são referências previamente conferidas, não uma implementação de testes. Nos respectivos PRs, transformá-los em testes do resultado e das etapas.
+Os 24 casos em `tests/fixtures/reference-cases.json` são referências previamente conferidas. MAT-02 e MAT-05-1..3 já são executados contra Gauss, com substituição na entrada e repetição das operações de linha. O método por inversa previsto para MAT-05-1..3 continua pendente; os outros 20 casos também aguardam seus respectivos algoritmos. A suíte de Gauss cobre ainda SPD/SPI/SI, matrizes retangulares, pivôs zero, múltiplos parâmetros livres, limites de dimensão e imutabilidade.
 
 Também fazem parte do aceite: combinações lineares, LI/LD e base do espaço gerado; entrada inválida; sistemas impossíveis e indeterminados; necessidade de troca de linhas; vetor zero; exportação; autenticação e isolamento entre usuários. Casos próprios e exercícios numéricos compostos complementam os IDs acima.
 

@@ -7,3 +7,11 @@ export type SerializedRational = Readonly<{
 export type SystemClassification = 'unique' | 'infinite' | 'inconsistent';
 
 export { INPUT_LIMITS } from './limits';
+export type {
+  SerializedVector,
+  SerializedMatrix,
+  PivotPosition,
+  AffineValue,
+  GaussianStep,
+  GaussianSolution,
+} from './gaussian';
