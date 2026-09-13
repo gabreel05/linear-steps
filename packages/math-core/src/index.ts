@@ -1,4 +1,14 @@
-// Algorithms will be introduced with their exact-arithmetic acceptance tests.
+export { Rational } from './rational';
+export { MathInputError, type MathErrorCode } from './errors';
+export {
+  parseScalar,
+  parseVector,
+  parseMatrix,
+  parseLinearSystem,
+  type RationalVector,
+  type RationalMatrix,
+  type LinearSystemInput,
+} from './input';
 export type {
   SerializedRational,
   SystemClassification,

@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@linear-steps/contracts": "workspace:*"
+    "@linear-steps/contracts": "workspace:*",
+    "mathjs": "15.2.0"
   }
 }

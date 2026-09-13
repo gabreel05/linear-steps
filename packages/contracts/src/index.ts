@@ -5,3 +5,5 @@ export type SerializedRational = Readonly<{
 }>;
 
 export type SystemClassification = 'unique' | 'infinite' | 'inconsistent';
+
+export { INPUT_LIMITS } from './limits';
