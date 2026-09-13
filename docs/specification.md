@@ -10,7 +10,7 @@ O aceite da V1 será medido pelos exercícios compatíveis com o escopo, e não 
 
 Decisões aprovadas: React + TypeScript + Vite; KaTeX; algoritmos próprios com apoio de math.js; Supabase Auth e PostgreSQL; autenticação por e-mail; histórico sincronizado; exportação PDF e JSON; testes e verificações automáticas; revisão por pull requests; repositório público `linear-steps`. Produto: **Linear Steps**. IA será usada no desenvolvimento, sem chamadas a modelos no produto.
 
-As escolhas detalhadas abaixo são propostas de implementação dentro desse escopo. O repositório remoto e os serviços ainda não foram criados.
+As escolhas detalhadas abaixo são propostas de implementação dentro desse escopo. O repositório remoto foi criado em `gabreel05/linear-steps`; os serviços de autenticação e persistência ainda serão configurados.
 
 ## 2. Experiência principal
 
@@ -28,22 +28,22 @@ O usuário traduz enunciados em dados. A V1 não interpreta automaticamente foto
 
 ## 3. Operações e métodos
 
-| Área | Funcionalidades da V1 | Métodos e etapas |
-|---|---|---|
-| Matrizes | Soma, subtração, produto por escalar, produto matricial e transposta | Operações elemento a elemento; produto linha por coluna; troca de índices |
-| Determinantes | Matrizes quadradas | Fórmula de ordem 1 e 2; Sarrus apenas em 3×3; Laplace por linha ou coluna; triangularização com controle dos fatores |
-| Inversa | Matriz quadrada não singular | Gauss–Jordan sobre `[A | I]`; adjunta e determinante |
-| Escalonamento | Forma escalonada, forma reduzida e posto | Gauss e Gauss–Jordan, com pivôs e operações elementares explícitos |
-| Sistemas | Matrizes retangulares e quadradas; SPD, SPI e SI; homogêneos | Gauss com retrosubstituição; Gauss–Jordan; Cramer e matriz inversa quando aplicáveis |
-| Vetores em Rⁿ | Soma, subtração, multiplicação por escalar, vetor entre dois pontos | Cálculo por componentes |
-| Produto escalar e norma | Produto interno euclidiano, norma, vetor unitário, ortogonalidade e ângulo | Soma de produtos, raiz da soma dos quadrados, normalização, fórmula do cosseno |
-| Projeção | Projeção sobre a direção de um vetor não nulo e componente ortogonal | `(u·v)/(v·v) v`, resíduo e verificação de ortogonalidade |
-| Combinação linear | Calcular combinação com coeficientes fornecidos; encontrar coeficientes para um alvo | Soma ponderada ou sistema com os vetores nas colunas |
-| Dependência linear | Decidir LI/LD; mostrar uma relação não trivial em caso de LD | Sistema homogêneo e pivôs; determinante como alternativa para n vetores em Rⁿ |
-| Base | Verificar base de Rⁿ; extrair base do espaço gerado; informar dimensão desse espaço | Posto e colunas-pivô da matriz ORIGINAL |
-| Produto vetorial | Dois vetores em R³ | Componentes e expansão do determinante formal com i, j, k |
-| Produto misto | Três vetores em R³ | Produto escalar com produto vetorial; determinante 3×3 |
-| Geometria | Áreas de triângulo e paralelogramo; volumes de tetraedro e paralelepípedo; coplanaridade | Vetores a partir de pontos, produto vetorial/misto, norma, valor absoluto e fatores 1/2 ou 1/6 |
+| Área                    | Funcionalidades da V1                                                                    | Métodos e etapas                                                                                                     |
+| ----------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Matrizes                | Soma, subtração, produto por escalar, produto matricial e transposta                     | Operações elemento a elemento; produto linha por coluna; troca de índices                                            |
+| Determinantes           | Matrizes quadradas                                                                       | Fórmula de ordem 1 e 2; Sarrus apenas em 3×3; Laplace por linha ou coluna; triangularização com controle dos fatores |
+| Inversa                 | Matriz quadrada não singular                                                             | Gauss–Jordan sobre `[A                                                                                               | I]`; adjunta e determinante |
+| Escalonamento           | Forma escalonada, forma reduzida e posto                                                 | Gauss e Gauss–Jordan, com pivôs e operações elementares explícitos                                                   |
+| Sistemas                | Matrizes retangulares e quadradas; SPD, SPI e SI; homogêneos                             | Gauss com retrosubstituição; Gauss–Jordan; Cramer e matriz inversa quando aplicáveis                                 |
+| Vetores em Rⁿ           | Soma, subtração, multiplicação por escalar, vetor entre dois pontos                      | Cálculo por componentes                                                                                              |
+| Produto escalar e norma | Produto interno euclidiano, norma, vetor unitário, ortogonalidade e ângulo               | Soma de produtos, raiz da soma dos quadrados, normalização, fórmula do cosseno                                       |
+| Projeção                | Projeção sobre a direção de um vetor não nulo e componente ortogonal                     | `(u·v)/(v·v) v`, resíduo e verificação de ortogonalidade                                                             |
+| Combinação linear       | Calcular combinação com coeficientes fornecidos; encontrar coeficientes para um alvo     | Soma ponderada ou sistema com os vetores nas colunas                                                                 |
+| Dependência linear      | Decidir LI/LD; mostrar uma relação não trivial em caso de LD                             | Sistema homogêneo e pivôs; determinante como alternativa para n vetores em Rⁿ                                        |
+| Base                    | Verificar base de Rⁿ; extrair base do espaço gerado; informar dimensão desse espaço      | Posto e colunas-pivô da matriz ORIGINAL                                                                              |
+| Produto vetorial        | Dois vetores em R³                                                                       | Componentes e expansão do determinante formal com i, j, k                                                            |
+| Produto misto           | Três vetores em R³                                                                       | Produto escalar com produto vetorial; determinante 3×3                                                               |
+| Geometria               | Áreas de triângulo e paralelogramo; volumes de tetraedro e paralelepípedo; coplanaridade | Vetores a partir de pontos, produto vetorial/misto, norma, valor absoluto e fatores 1/2 ou 1/6                       |
 
 Normalização e ângulo são extensões imediatas das operações aprovadas, necessárias a partes das listas. Normal a um plano e torque podem ser obtidos pelo produto vetorial, sem um módulo adicional de física. Distância a uma reta pela origem pode ser obtida pela norma do resíduo da projeção, sem um solucionador geral de geometria analítica.
 

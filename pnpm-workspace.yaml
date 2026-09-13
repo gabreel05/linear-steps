@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - packages/*
+
+strictPeerDependencies: true
+
+# No dependency lifecycle scripts are required by this initial workspace.
+allowBuilds: {}

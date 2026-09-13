@@ -2,6 +2,8 @@
 
 Status: aceito no escopo inicial.
 
+Na estrutura inicial, TypeScript fica em 6.0.3: a versão selecionada do typescript-eslint suporta TypeScript abaixo de 6.1. Usar TypeScript 7 agora deixaria a análise estática fora da faixa de compatibilidade declarada. Node e dependências têm versões fixadas para reproduzir as verificações locais e no CI.
+
 O produto deve explicar procedimentos de álgebra linear, preservar frações exatas e permitir reabrir cálculos em dispositivos diferentes.
 
 Usaremos React/TypeScript/Vite na interface; núcleo TypeScript sem dependência de UI ou banco; contratos serializáveis versionados; KaTeX para apresentação; math.js como apoio à aritmética; Supabase Auth/PostgreSQL para contas e histórico privado com RLS.
