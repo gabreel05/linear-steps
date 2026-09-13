@@ -22,7 +22,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-A interface inicial identifica os módulos planejados; os algoritmos e a autenticação serão implementados nas próximas entregas. Ainda não é necessário configurar Supabase para executar essa estrutura.
+A interface inicial identifica os módulos planejados; os algoritmos de resolução e a autenticação serão implementados nas próximas entregas. O núcleo já oferece frações exatas e validação de entradas escalares, vetores, matrizes e sistemas, com testes independentes da interface. Ainda não é necessário configurar Supabase para executar essa estrutura.
 
 ```sh
 pnpm check       # formatação, lint, testes e build com verificação de tipos
@@ -30,7 +30,20 @@ pnpm format      # aplica a formatação
 pnpm test:watch  # testes durante o desenvolvimento
 ```
 
-O workspace contém `apps/web` (React), `packages/contracts` (dados serializáveis) e `packages/math-core` (algoritmos). Os testes iniciais verificam limites entre dependências; a suíte matemática será adicionada com os algoritmos. Os hooks verificam arquivos preparados para commit e executam tipos/testes antes do push. O GitHub Actions executa a verificação completa em pull requests e na branch principal.
+O workspace contém `apps/web` (React), `packages/contracts` (dados serializáveis) e `packages/math-core` (algoritmos). Os testes verificam limites entre dependências, aritmética racional, validação de entradas e serialização. Os hooks verificam arquivos preparados para commit e executam tipos/testes antes do push. O GitHub Actions executa a verificação completa em pull requests e na branch principal.
+
+Exemplo de uso do núcleo em TypeScript:
+
+```ts
+import { parseScalar, Rational } from '@linear-steps/math-core';
+
+const result = parseScalar('0,1').add(parseScalar('1/5'));
+result.toString(); // '3/10'
+const restored = Rational.fromJSON(JSON.parse(JSON.stringify(result)));
+restored.equals(result); // true
+```
+
+Os formatos aceitos e os limites estão no [ADR de entrada racional](docs/decisions/002-exact-rational-input.md).
 
 ## Revisão
 
