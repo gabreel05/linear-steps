@@ -22,7 +22,9 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-A interface inicial identifica os módulos planejados. O núcleo já oferece frações exatas, validação de entradas e solução de sistemas por Gauss com etapas estruturadas, com testes independentes da interface. A tela interativa de resolução e a autenticação serão implementadas nas próximas entregas. Ainda não é necessário configurar Supabase para executar essa estrutura.
+A interface resolve sistemas por Gauss com entrada em grade, de 1 a 6 equações e incógnitas. Inclui exemplos, resultado exato, navegação pelas etapas, destaques de pivôs e linhas alteradas e aproximação decimal opcional das matrizes. Abra o endereço exibido por `pnpm dev` e clique em “Resolver passo a passo” para testar o exemplo inicial.
+
+Autenticação, histórico sincronizado, exportação e os demais métodos ainda serão implementados. Ainda não é necessário configurar Supabase. Veja as decisões da [interface de resolução](docs/decisions/004-solution-interface.md).
 
 ```sh
 pnpm check       # formatação, lint, testes e build com verificação de tipos
