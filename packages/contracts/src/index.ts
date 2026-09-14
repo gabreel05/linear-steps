@@ -8,6 +8,11 @@ export type SystemClassification = 'unique' | 'infinite' | 'inconsistent';
 
 export { INPUT_LIMITS } from './limits';
 export type {
+  ReductionStep,
+  ReductionResult,
+  InverseResult,
+} from './reduction';
+export type {
   SerializedVector,
   SerializedMatrix,
   PivotPosition,
