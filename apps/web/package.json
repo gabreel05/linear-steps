@@ -12,6 +12,7 @@
   "dependencies": {
     "@linear-steps/contracts": "workspace:*",
     "@linear-steps/math-core": "workspace:*",
+    "@supabase/supabase-js": "2.116.0",
     "katex": "0.18.7",
     "react": "19.3.0",
     "react-dom": "19.3.0"
