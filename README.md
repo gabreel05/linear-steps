@@ -67,4 +67,6 @@ O [ADR de Gauss](docs/decisions/003-gaussian-elimination.md) explica o contrato 
 
 ## Revisão
 
+O núcleo também exporta `reduceMatrix(matrix)` (forma reduzida e posto) e `invertMatrix(matrix)` (inversa ou classificação singular), ambos com etapas exatas. Essa entrega ainda não adiciona esses cálculos à tela. Veja o [ADR de Gauss-Jordan](docs/decisions/005-gauss-jordan.md).
+
 Alterações passam por branches e pull requests. Não fazer merge antes da revisão do responsável pelo projeto. Código e identificadores em inglês; interface em português. A licença de distribuição ainda será definida.

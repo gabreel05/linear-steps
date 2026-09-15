@@ -1,5 +1,6 @@
 export { Rational } from './rational';
 export { solveGaussian } from './gaussian';
+export { reduceMatrix, invertMatrix } from './reduction';
 export { MathInputError, type MathErrorCode } from './errors';
 export {
   parseScalar,
