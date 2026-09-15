@@ -2,9 +2,44 @@ import type {
   AffineValue,
   GaussianSolution,
   GaussianStep,
+  ReductionStep,
+  ReductionResult,
+  InverseResult,
+  SerializedMatrix,
   SerializedRational,
   SerializedVector,
 } from '@linear-steps/contracts';
+
+export type CalculationResult =
+  GaussianSolution | ReductionResult | InverseResult;
+export type CalculationStep = GaussianStep | ReductionStep;
+
+export const matrixTex = (matrix: SerializedMatrix) =>
+  `\\begin{pmatrix}${matrix.map((row) => row.map(rationalTex).join('&')).join('\\\\')}\\end{pmatrix}`;
+
+export function resultTitle(result: CalculationResult): string {
+  if (result.method === 'gauss')
+    return {
+      unique: 'Solução única (SPD)',
+      infinite: 'Infinitas soluções (SPI)',
+      inconsistent: 'Nenhuma solução (SI)',
+    }[result.classification];
+  if ('classification' in result)
+    return result.classification === 'singular'
+      ? 'Matriz singular — sem inversa'
+      : 'Matriz inversa';
+  return 'Forma escalonada reduzida';
+}
+
+export function resultTex(result: CalculationResult): string {
+  if (result.method === 'gauss') return solutionTex(result);
+  if ('classification' in result) {
+    if (result.classification === 'singular')
+      return `\\operatorname{posto}(A)=${result.rank}<${result.input.length}\\quad\\Longrightarrow\\quad A^{-1}\\text{ não existe}`;
+    return `A^{-1}=${matrixTex(result.inverse)}`;
+  }
+  return `\\operatorname{rref}(A)=${matrixTex(result.reduced)}`;
+}
 
 export function rationalTex(value: SerializedRational): string {
   const { numerator: n, denominator: d } = value;
@@ -55,10 +90,12 @@ export function solutionTex(result: GaussianSolution): string {
   return `x=${vectorTex(result.particular)}${result.directions.map((direction, i) => `+t_{${i + 1}}${vectorTex(direction)}`).join('')}\\quad t_{1}${result.directions.length > 1 ? `,\\ldots,t_{${result.directions.length}}` : ''}\\in\\mathbb{R}`;
 }
 
-export function stepTitle(step: GaussianStep): string {
+export function stepTitle(step: CalculationStep, augmented = true): string {
   switch (step.kind) {
     case 'initial':
-      return 'Matriz aumentada inicial';
+      return augmented ? 'Matriz aumentada inicial' : 'Matriz inicial';
+    case 'scale-row':
+      return `Normalizar pivô da linha ${step.row + 1}`;
     case 'pivot':
       return `Pivô na linha ${step.pivot.row + 1}, coluna ${step.pivot.column + 1}`;
     case 'swap':
@@ -75,8 +112,8 @@ export function stepTitle(step: GaussianStep): string {
 }
 
 export function stepTex(
-  step: GaussianStep,
-  result: GaussianSolution,
+  step: CalculationStep,
+  result: CalculationResult,
 ): string | null {
   switch (step.kind) {
     case 'initial':
@@ -84,6 +121,8 @@ export function stepTex(
       return null;
     case 'swap':
       return `L_{${step.rows[0] + 1}}\\leftrightarrow L_{${step.rows[1] + 1}}`;
+    case 'scale-row':
+      return `L_{${step.row + 1}}\\leftarrow\\left(${rationalTex(step.factor)}\\right)L_{${step.row + 1}}`;
     case 'add-row': {
       const negative = step.factor.numerator.startsWith('-');
       const absolute = {
@@ -108,6 +147,6 @@ export function stepTex(
       return `x_{${step.column + 1}}=\\frac{${rationalTex(step.rhs)}${terms ? `-\\left[${terms}\\right]` : ''}}{${rationalTex(step.divisor)}}=${affineTex(step.value)}`;
     }
     case 'conclusion':
-      return solutionTex(result);
+      return resultTex(result);
   }
 }

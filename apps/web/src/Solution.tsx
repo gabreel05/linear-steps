@@ -1,47 +1,60 @@
 import { useState } from 'react';
-import type {
-  GaussianSolution,
-  GaussianStep,
-  SerializedMatrix,
-} from '@linear-steps/contracts';
+import type { SerializedMatrix } from '@linear-steps/contracts';
 import { Math } from './Math';
 import {
   decimalText,
   rationalTex,
-  solutionTex,
+  resultTex,
+  resultTitle,
+  type CalculationResult,
+  type CalculationStep,
   stepTex,
   stepTitle,
 } from './math-format';
-
-const classificationLabels = {
-  unique: 'Solução única (SPD)',
-  infinite: 'Infinitas soluções (SPI)',
-  inconsistent: 'Nenhuma solução (SI)',
-};
 
 function Matrix({
   matrix,
   step,
   decimal,
+  result,
 }: {
   matrix: SerializedMatrix;
-  step: GaussianStep;
+  step: CalculationStep;
   decimal: boolean;
+  result: CalculationResult;
 }) {
+  const system = result.method === 'gauss';
+  const inverse = !system && 'classification' in result;
+  const split = system
+    ? matrix[0]!.length - 1
+    : inverse
+      ? result.input.length
+      : -1;
+  const caption = system
+    ? 'Matriz aumentada'
+    : inverse
+      ? 'Bloco aumentado [A | I] em transformação'
+      : 'Matriz em transformação';
   return (
     <div className="matrix-scroll">
       <table className="result-matrix">
         <caption>
           {decimal
-            ? 'Matriz aumentada — valores aproximados, até 6 casas decimais'
-            : 'Matriz aumentada — valores exatos'}
+            ? `${caption} — valores aproximados, até 6 casas decimais`
+            : `${caption} — valores exatos`}
         </caption>
         <thead>
           <tr>
             <th scope="col">Linha</th>
             {matrix[0]!.map((_, j) => (
               <th key={j} scope="col">
-                {j === matrix[0]!.length - 1 ? 'b' : `x${j + 1}`}
+                {system
+                  ? j === split
+                    ? 'b'
+                    : `x${j + 1}`
+                  : inverse && j >= split
+                    ? `Direita ${j - split + 1}`
+                    : `Coluna ${j + 1}`}
               </th>
             ))}
           </tr>
@@ -50,7 +63,8 @@ function Matrix({
           {matrix.map((row, i) => {
             const changed =
               (step.kind === 'swap' && step.rows.includes(i)) ||
-              (step.kind === 'add-row' && step.target === i);
+              (step.kind === 'add-row' && step.target === i) ||
+              (step.kind === 'scale-row' && step.row === i);
             return (
               <tr key={i} className={changed ? 'changed-row' : ''}>
                 <th scope="row">
@@ -68,7 +82,7 @@ function Matrix({
                   return (
                     <td
                       key={j}
-                      className={`${j === row.length - 1 ? 'rhs-cell' : ''} ${pivot ? 'pivot-cell' : ''}`}
+                      className={`${j === split ? 'rhs-cell' : ''} ${pivot ? 'pivot-cell' : ''}`}
                     >
                       {decimal ? (
                         decimalText(value)
@@ -94,34 +108,40 @@ function Step({
   index,
   decimal,
 }: {
-  step: GaussianStep;
-  result: GaussianSolution;
+  step: CalculationStep;
+  result: CalculationResult;
   index: number;
   decimal: boolean;
 }) {
   const formula = stepTex(step, result);
+  const title = stepTitle(
+    step,
+    result.method === 'gauss' || 'classification' in result,
+  );
   return (
-    <article
-      className="step-card"
-      aria-label={`Etapa ${index + 1}: ${stepTitle(step)}`}
-    >
+    <article className="step-card" aria-label={`Etapa ${index + 1}: ${title}`}>
       <p className="eyebrow">ETAPA {index + 1}</p>
-      <h3>{stepTitle(step)}</h3>
+      <h3>{title}</h3>
       {formula && <Math tex={formula} block />}
       {'matrix' in step && (
-        <Matrix matrix={step.matrix} step={step} decimal={decimal} />
+        <Matrix
+          matrix={step.matrix}
+          step={step}
+          decimal={decimal}
+          result={result}
+        />
       )}
-      {step.kind === 'conclusion' && (
+      {step.kind === 'conclusion' && result.method === 'gauss' && (
         <p>
-          {classificationLabels[result.classification]} · posto de A:{' '}
-          {result.rank} · posto de [A|b]: {result.augmentedRank}
+          {resultTitle(result)} · posto de A: {result.rank} · posto de [A|b]:{' '}
+          {result.augmentedRank}
         </p>
       )}
     </article>
   );
 }
 
-export function Solution({ result }: { result: GaussianSolution }) {
+export function Solution({ result }: { result: CalculationResult }) {
   const [index, setIndex] = useState(0);
   const [all, setAll] = useState(false);
   const [decimal, setDecimal] = useState(false);
@@ -152,9 +172,19 @@ export function Solution({ result }: { result: GaussianSolution }) {
       }}
     >
       <div className="answer">
-        <p className="eyebrow">RESULTADO · GAUSS</p>
-        <h3>{classificationLabels[result.classification]}</h3>
-        <Math tex={solutionTex(result)} block />
+        <p className="eyebrow">
+          RESULTADO · {result.method === 'gauss' ? 'GAUSS' : 'GAUSS-JORDAN'}
+        </p>
+        <h3>{resultTitle(result)}</h3>
+        <Math tex={resultTex(result)} block />
+        {result.method === 'gauss-jordan' && <p>Posto de A: {result.rank}</p>}
+        {result.method === 'gauss-jordan' && 'classification' in result && (
+          <p className="hint">
+            {result.classification === 'invertible'
+              ? 'As operações transformam [A | I] em [I | A⁻¹].'
+              : 'O bloco esquerdo não pode se tornar a identidade. O bloco direito não é uma inversa.'}
+          </p>
+        )}
       </div>
       <div className="viewer-options">
         <label>
@@ -200,7 +230,11 @@ export function Solution({ result }: { result: GaussianSolution }) {
               >
                 {result.steps.map((step, i) => (
                   <option key={i} value={i}>
-                    {i + 1} — {stepTitle(step)}
+                    {i + 1} —{' '}
+                    {stepTitle(
+                      step,
+                      result.method === 'gauss' || 'classification' in result,
+                    )}
                   </option>
                 ))}
               </select>
