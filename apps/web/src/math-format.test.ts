@@ -1,9 +1,57 @@
 import { describe, expect, it } from 'vitest';
 import katex from 'katex';
-import { parseScalar, solveGaussian } from '@linear-steps/math-core';
-import { decimalText, rationalTex, solutionTex, stepTex } from './math-format';
+import {
+  parseScalar,
+  solveGaussian,
+  reduceMatrix,
+  invertMatrix,
+} from '@linear-steps/math-core';
+import {
+  decimalText,
+  rationalTex,
+  solutionTex,
+  stepTex,
+  resultTex,
+} from './math-format';
 
 describe('math presentation', () => {
+  it.each([
+    {
+      result: reduceMatrix([
+        ['1', '2', '3'],
+        ['0', '2', '4'],
+      ]),
+    },
+    {
+      result: invertMatrix([
+        ['2', '1'],
+        ['0', '3'],
+      ]),
+    },
+    {
+      result: invertMatrix([
+        ['1', '2'],
+        ['2', '4'],
+      ]),
+    },
+  ])(
+    'renders Gauss-Jordan results and every operation without TeX errors %#',
+    ({ result }) => {
+      for (const formula of [
+        resultTex(result),
+        ...result.steps.map((step) => stepTex(step, result)),
+      ]) {
+        if (formula)
+          expect(() =>
+            katex.renderToString(formula, {
+              throwOnError: true,
+              strict: 'error',
+              trust: false,
+            }),
+          ).not.toThrow();
+      }
+    },
+  );
   it.each([
     ['1/3', '0,333333'],
     ['-2/3', '-0,666667'],

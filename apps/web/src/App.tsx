@@ -1,11 +1,48 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { INPUT_LIMITS, type GaussianSolution } from '@linear-steps/contracts';
+import { INPUT_LIMITS } from '@linear-steps/contracts';
 import {
   MathInputError,
   parseScalar,
   solveGaussian,
+  reduceMatrix,
+  invertMatrix,
 } from '@linear-steps/math-core';
 import { Solution } from './Solution';
+import type { CalculationResult } from './math-format';
+
+type Operation = 'system' | 'rref' | 'inverse';
+const matrixExamples = [
+  {
+    name: 'Lista · forma reduzida 3 × 4',
+    a: [
+      ['1', '2', '-1', '3'],
+      ['2', '4', '1', '8'],
+      ['-1', '-2', '3', '2'],
+    ],
+  },
+  {
+    name: 'Lista · inversa 3 × 3',
+    a: [
+      ['1', '0', '2'],
+      ['2', '1', '3'],
+      ['4', '1', '8'],
+    ],
+  },
+  {
+    name: 'Matriz singular',
+    a: [
+      ['1', '2'],
+      ['2', '4'],
+    ],
+  },
+  {
+    name: 'Normalização com fração',
+    a: [
+      ['2', '1'],
+      ['0', '3'],
+    ],
+  },
+];
 
 const examples = [
   {
@@ -44,9 +81,14 @@ const examples = [
 ];
 
 export function App() {
+  const [operation, setOperation] = useState<Operation>('system');
+  const system = operation === 'system';
+  const samples: { name: string; a: string[][]; b?: string[] }[] = system
+    ? examples
+    : matrixExamples;
   const [a, setA] = useState(examples[0]!.a);
   const [b, setB] = useState(examples[0]!.b);
-  const [result, setResult] = useState<GaussianSolution | null>(null);
+  const [result, setResult] = useState<CalculationResult | null>(null);
   const [error, setError] = useState<{ message: string; cell?: string } | null>(
     null,
   );
@@ -74,7 +116,7 @@ export function App() {
     setResult(null);
     setError(null);
     for (let i = 0; i < a.length; i++) {
-      const row = [...a[i]!, b[i]!];
+      const row = system ? [...a[i]!, b[i]!] : a[i]!;
       for (let j = 0; j < row.length; j++) {
         try {
           parseScalar(row[j]);
@@ -90,7 +132,13 @@ export function App() {
       }
     }
     try {
-      setResult(solveGaussian(a, b));
+      setResult(
+        system
+          ? solveGaussian(a, b)
+          : operation === 'rref'
+            ? reduceMatrix(a)
+            : invertMatrix(a),
+      );
       setRevision((value) => value + 1);
     } catch (cause) {
       setError({
@@ -110,7 +158,7 @@ export function App() {
         <a className="brand" href="#main">
           <span aria-hidden="true">[ L ]</span> Linear Steps
         </a>
-        <span className="status">Sistemas lineares · em desenvolvimento</span>
+        <span className="status">Matrizes e sistemas · em desenvolvimento</span>
       </header>
       <main id="main">
         <section className="workspace-intro">
@@ -119,30 +167,45 @@ export function App() {
             Resolva. <span>Entenda cada etapa.</span>
           </h1>
           <p>
-            Escreva os coeficientes de Ax = b e acompanhe a eliminação de Gauss
+            Trabalhe com matrizes e sistemas lineares e acompanhe cada operação
             com frações exatas.
           </p>
         </section>
         <div className="workspace">
           <section className="input-panel" aria-labelledby="input-heading">
-            <h2 id="input-heading">Seu sistema</h2>
+            <h2 id="input-heading">{system ? 'Seu sistema' : 'Sua matriz'}</h2>
+            <label className="field">
+              Operação
+              <select
+                aria-label="Operação"
+                value={operation}
+                onChange={(event) => {
+                  invalidate();
+                  setOperation(event.target.value as Operation);
+                }}
+              >
+                <option value="system">Resolver sistema</option>
+                <option value="rref">Forma reduzida e posto</option>
+                <option value="inverse">Matriz inversa</option>
+              </select>
+            </label>
             <label className="field">
               Carregar exemplo
               <select
                 aria-label="Carregar exemplo"
                 value=""
                 onChange={(event) => {
-                  const sample = examples[Number(event.target.value)];
+                  const sample = samples[Number(event.target.value)];
                   if (!sample) return;
                   invalidate();
                   setA(sample.a.map((row) => [...row]));
-                  setB([...sample.b]);
+                  setB(sample.b ? [...sample.b] : sample.a.map(() => '0'));
                 }}
               >
                 <option value="" disabled>
                   Escolha um exemplo
                 </option>
-                {examples.map((sample, i) => (
+                {samples.map((sample, i) => (
                   <option key={i} value={i}>
                     {sample.name}
                   </option>
@@ -151,7 +214,10 @@ export function App() {
             </label>
             <form onSubmit={solve} noValidate>
               <div className="dimensions">
-                {(['Equações', 'Incógnitas'] as const).map((label, k) => (
+                {(system
+                  ? ['Equações', 'Incógnitas']
+                  : ['Linhas', 'Colunas']
+                ).map((label, k) => (
                   <label key={label} className="field">
                     {label}
                     <select
@@ -178,25 +244,32 @@ export function App() {
               </div>
               <div className="input-scroll">
                 <table className="input-matrix">
-                  <caption>Coeficientes de A e termos independentes b</caption>
+                  <caption>
+                    {system
+                      ? 'Coeficientes de A e termos independentes b'
+                      : 'Elementos da matriz A'}
+                  </caption>
                   <thead>
                     <tr>
                       <th scope="col">Linha</th>
                       {a[0]!.map((_, j) => (
                         <th scope="col" key={j}>
-                          x{j + 1}
+                          {system ? 'x' : 'C'}
+                          {j + 1}
                         </th>
                       ))}
-                      <th scope="col" className="rhs-cell">
-                        b
-                      </th>
+                      {system && (
+                        <th scope="col" className="rhs-cell">
+                          b
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
                     {a.map((row, i) => (
                       <tr key={i}>
                         <th scope="row">L{i + 1}</th>
-                        {[...row, b[i]!].map((value, j) => {
+                        {(system ? [...row, b[i]!] : row).map((value, j) => {
                           const id = `cell-${i}-${j}`;
                           return (
                             <td
@@ -205,7 +278,7 @@ export function App() {
                             >
                               <input
                                 id={id}
-                                aria-label={`Linha ${i + 1}, ${j === row.length ? 'termo independente' : `coeficiente x${j + 1}`}`}
+                                aria-label={`Linha ${i + 1}, ${system ? (j === row.length ? 'termo independente' : `coeficiente x${j + 1}`) : `coluna ${j + 1}`}`}
                                 aria-invalid={error?.cell === id}
                                 aria-describedby={
                                   error?.cell === id
@@ -252,12 +325,16 @@ export function App() {
               </p>
               <label className="field">
                 Método
-                <select aria-label="Método">
-                  <option value="gauss">Eliminação de Gauss</option>
+                <select aria-label="Método" key={operation}>
+                  <option value={system ? 'gauss' : 'gauss-jordan'}>
+                    {system ? 'Eliminação de Gauss' : 'Gauss-Jordan'}
+                  </option>
                 </select>
               </label>
               <p className="hint">
-                Outros métodos serão adicionados nas próximas entregas.
+                {operation === 'inverse'
+                  ? 'A inversa exige uma matriz quadrada. O bloco identidade é acrescentado automaticamente.'
+                  : 'Outros métodos serão adicionados nas próximas entregas.'}
               </p>
               {error && (
                 <p className="error" id="input-error" role="alert">
@@ -280,8 +357,18 @@ export function App() {
               <Solution key={revision} result={result} />
             ) : (
               <div className="empty-state">
-                <span aria-hidden="true">[ A | b ]</span>
-                <h3>O caminho começa com seu sistema.</h3>
+                <span aria-hidden="true">
+                  {system
+                    ? '[ A | b ]'
+                    : operation === 'inverse'
+                      ? '[ A | I ]'
+                      : '[ A ]'}
+                </span>
+                <h3>
+                  {system
+                    ? 'O caminho começa com seu sistema.'
+                    : 'O caminho começa com sua matriz.'}
+                </h3>
                 <p>
                   Confira os valores e clique em “Resolver passo a passo”. Ao
                   editar as entradas, resolva novamente para ver as novas
