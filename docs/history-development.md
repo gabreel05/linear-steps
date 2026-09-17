@@ -1,6 +1,6 @@
 # Banco do histórico no ambiente de desenvolvimento
 
-Esta entrega prepara a tabela e os testes de segurança. A calculadora ainda não oferece botões de histórico. A integração hospedada e a interface serão a próxima revisão.
+Tabela, políticas e interface estão implementadas. A integração com o projeto hospedado precisa ser validada após aplicar a migração. Ao entrar na conta, o painel “Seu histórico” aparece abaixo da calculadora; resolver um problema libera o campo de título e o botão de salvar.
 
 ## Revisar e aplicar
 
@@ -11,7 +11,7 @@ Esta entrega prepara a tabela e os testes de segurança. A calculadora ainda nã
 
 A aplicação manual pelo SQL Editor não registra a versão no histórico de migrações da CLI. Antes de adotar `supabase db push`, será necessário reconciliar esse histórico com a migração já aplicada; não tente criar a tabela novamente. Não use `DROP TABLE` para contornar uma aplicação duplicada.
 
-## Contrato para a próxima interface
+## Contrato da interface
 
 - Inserir apenas `id`, `operation`, `method`, `title`, `schema_version`, `algorithm_version` e `payload`. O payload é o objeto JSON completo retornado pelo núcleo matemático.
 - Gerar o UUID antes do primeiro envio e preservá-lo na nova tentativa. Usar conflito em `user_id,id` com `DO NOTHING`, jamais `DO UPDATE`. No SDK, configurar `ignoreDuplicates: true` e `defaultToNull: false`; consultar o registro depois para confirmar que existe. Uma resposta de conflito ignorado não contém necessariamente o registro.
@@ -33,7 +33,7 @@ Não exige Docker, Supabase local, segredos nem conexão com o projeto hospedado
 
 ## Aceite hospedado pendente
 
-Após implementar a interface, executar com duas contas reais de teste:
+Executar com duas contas reais de teste após aplicar a migração:
 
 1. Salvar um sistema com frações, uma matriz reduzida e uma inversa. Reabrir e conferir entrada, etapas e conclusão exatas.
 2. Entrar na mesma conta em outro navegador/dispositivo e atualizar a lista; conferir os três registros. Voltar à aba deve também reconsultar.

@@ -67,7 +67,7 @@ O [ADR de Gauss](docs/decisions/003-gaussian-elimination.md) explica o contrato 
 
 ## Revisão
 
-A base do histórico privado está em `supabase/migrations`, com testes de permissões e RLS executados em PostgreSQL via PGlite durante `pnpm check`. A interface de histórico e a validação com duas contas no Supabase hospedado ainda estão pendentes. Veja o [guia de desenvolvimento do histórico](docs/history-development.md) e a [decisão de armazenamento](docs/decisions/008-history-storage.md).
+A base do histórico privado está em `supabase/migrations`, com testes de permissões e RLS executados em PostgreSQL via PGlite durante `pnpm check`. A interface permite salvar, filtrar, paginar, reabrir e excluir cálculos da conta. A migração precisa ser aplicada ao ambiente de desenvolvimento; a validação hospedada com duas contas ainda está pendente. Veja o [guia do histórico](docs/history-development.md), a [decisão de armazenamento](docs/decisions/008-history-storage.md) e a [integração da interface](docs/decisions/009-history-interface.md).
 
 O núcleo também exporta `reduceMatrix(matrix)` (forma reduzida e posto) e `invertMatrix(matrix)` (inversa ou classificação singular), ambos com etapas exatas. Na interface, selecione “Forma reduzida e posto” ou “Matriz inversa” no campo Operação. Os exemplos incluem MAT-01, MAT-04, matriz singular e normalização com fração. Veja o [ADR de Gauss-Jordan](docs/decisions/005-gauss-jordan.md) e sua [integração visual](docs/decisions/006-matrix-interface.md).
 

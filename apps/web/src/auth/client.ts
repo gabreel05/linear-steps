@@ -42,7 +42,17 @@ function configuredAccount() {
       new URL(window.location.href),
       (url) => window.history.replaceState(null, '', url),
     );
-    return { controller, error: null };
+    async function historyClient(userId: string) {
+      const { data, error } = await client.auth.getSession();
+      if (error || !data.session || data.session.user.id !== userId)
+        throw new Error('Session changed');
+      const token = data.session.access_token;
+      // Pin this request to its initiating account, even if auth changes before fetch.
+      return createClient(config!.url, config!.key, {
+        accessToken: async () => token,
+      });
+    }
+    return { controller, historyClient, error: null };
   } catch {
     return {
       controller: null,
