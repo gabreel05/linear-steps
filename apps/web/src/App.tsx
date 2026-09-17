@@ -8,6 +8,7 @@ import {
   invertMatrix,
 } from '@linear-steps/math-core';
 import { Solution } from './Solution';
+import { Account } from './auth/Account';
 import type { CalculationResult } from './math-format';
 
 type Operation = 'system' | 'rref' | 'inverse';
@@ -161,6 +162,7 @@ export function App() {
         <span className="status">Matrizes e sistemas · em desenvolvimento</span>
       </header>
       <main id="main">
+        <Account />
         <section className="workspace-intro">
           <p className="eyebrow">ÁLGEBRA LINEAR · PASSO A PASSO</p>
           <h1>

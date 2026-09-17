@@ -24,7 +24,7 @@ pnpm dev
 
 A interface resolve sistemas por Gauss com entrada em grade, de 1 a 6 equações e incógnitas. Inclui exemplos, resultado exato, navegação pelas etapas, destaques de pivôs e linhas alteradas e aproximação decimal opcional das matrizes. Abra o endereço exibido por `pnpm dev` e clique em “Resolver passo a passo” para testar o exemplo inicial.
 
-Autenticação, histórico sincronizado, exportação e os demais métodos ainda serão implementados. Ainda não é necessário configurar Supabase. Veja as decisões da [interface de resolução](docs/decisions/004-solution-interface.md).
+O painel de autenticação por e-mail está implementado e exige configuração do Supabase para funcionar; a validação com e-mails reais ainda está pendente. Sem essa configuração, a calculadora continua disponível. Siga o [guia de autenticação em desenvolvimento](docs/auth-development.md). Histórico sincronizado, exportação e os demais métodos seguem nas próximas entregas. Veja também as decisões da [interface de resolução](docs/decisions/004-solution-interface.md).
 
 ```sh
 pnpm check       # formatação, lint, testes e build com verificação de tipos

@@ -340,6 +340,50 @@ footer {
   color: #596a60;
   font-size: 12px;
 }
+.account-panel {
+  margin-top: 24px;
+  padding: 20px 24px;
+  border: 1px solid #d8ded5;
+  border-radius: 12px;
+  background: #fffefa;
+}
+.account-panel h2 {
+  margin-top: 0;
+}
+.account-panel form {
+  max-width: 420px;
+}
+.account-panel fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.account-panel .field input {
+  width: 100%;
+}
+.account-modes,
+.account-session {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.account-modes [aria-pressed='true'] {
+  background: #e7eddf;
+  border-color: #315c48;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
 @media (max-width: 950px) {
   .workspace {
     grid-template-columns: 1fr;
