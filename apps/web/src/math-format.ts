@@ -1,4 +1,5 @@
 import type {
+  MatrixOperationResult,
   AffineValue,
   GaussianSolution,
   GaussianStep,
@@ -10,14 +11,15 @@ import type {
   SerializedVector,
 } from '@linear-steps/contracts';
 
-export type CalculationResult =
+export type CalculationResult = EliminationResult | MatrixOperationResult;
+export type EliminationResult =
   GaussianSolution | ReductionResult | InverseResult;
 export type CalculationStep = GaussianStep | ReductionStep;
 
 export const matrixTex = (matrix: SerializedMatrix) =>
   `\\begin{pmatrix}${matrix.map((row) => row.map(rationalTex).join('&')).join('\\\\')}\\end{pmatrix}`;
 
-export function resultTitle(result: CalculationResult): string {
+export function resultTitle(result: EliminationResult): string {
   if (result.method === 'gauss')
     return {
       unique: 'Solução única (SPD)',
@@ -31,7 +33,7 @@ export function resultTitle(result: CalculationResult): string {
   return 'Forma escalonada reduzida';
 }
 
-export function resultTex(result: CalculationResult): string {
+export function resultTex(result: EliminationResult): string {
   if (result.method === 'gauss') return solutionTex(result);
   if ('classification' in result) {
     if (result.classification === 'singular')
@@ -113,7 +115,7 @@ export function stepTitle(step: CalculationStep, augmented = true): string {
 
 export function stepTex(
   step: CalculationStep,
-  result: CalculationResult,
+  result: EliminationResult,
 ): string | null {
   switch (step.kind) {
     case 'initial':

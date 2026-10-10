@@ -2,6 +2,11 @@ import { readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
+  addMatrices,
+  subtractMatrices,
+  scaleMatrix,
+  multiplyMatrices,
+  transposeMatrix,
   invertMatrix,
   reduceMatrix,
   solveGaussian,
@@ -73,6 +78,22 @@ beforeAll(async () => {
       'utf8',
     ),
   );
+  await identity(alice);
+  await db.query(insertSql, values());
+  await db.exec('reset role');
+  await db.exec(
+    await readFile(
+      new URL(
+        '../supabase/migrations/20261010000100_matrix_operations_history.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  await identity(alice);
+  expect(
+    (await db.query('select payload from public.calculations')).rows,
+  ).toEqual([{ payload: solution }]);
 }, 60000);
 beforeEach(async () => {
   await db.exec('reset role; truncate public.calculations');
@@ -327,4 +348,47 @@ describe('calculation history SQL permissions and storage', () => {
     );
     await db.query('insert into auth.users values ($1)', [alice]);
   });
+});
+
+it.each([
+  ['add', addMatrices([['1']], [['2']])],
+  ['subtract', subtractMatrices([['1']], [['2']])],
+  ['multiply', multiplyMatrices([['1']], [['2']])],
+  ['scale', scaleMatrix([['1']], '2/3')],
+  ['transpose', transposeMatrix([['1', '2']])],
+] as const)(
+  'stores %s under the same ownership restrictions',
+  async (operation, payload) => {
+    await db.query(
+      insertSql,
+      values(payload, operation, 'entrywise', 'matrix-operations-1'),
+    );
+    expect(
+      (await db.query('select * from public.calculations')).rows,
+    ).toHaveLength(1);
+    await identity(bob);
+    expect(
+      (await db.query('select * from public.calculations')).rows,
+    ).toHaveLength(0);
+    await db.query('delete from public.calculations where id=$1', [id]);
+    await identity(alice);
+    expect(
+      (await db.query('select * from public.calculations')).rows,
+    ).toHaveLength(1);
+  },
+);
+
+it('rejects mismatched operation, missing operands and unsupported matrix algorithm versions', async () => {
+  const payload = addMatrices([['1']], [['2']]);
+  for (const data of [
+    values(payload, 'multiply', 'entrywise', 'matrix-operations-1'),
+    values(
+      { ...payload, input: { operation: 'add', left: payload.input } },
+      'add',
+      'entrywise',
+      'matrix-operations-1',
+    ),
+    values(payload, 'add', 'entrywise', 'matrix-operations-2'),
+  ])
+    await expect(db.query(insertSql, data)).rejects.toThrow();
 });

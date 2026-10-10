@@ -12,7 +12,9 @@ import { Account } from './auth/Account';
 import { History } from './history/History';
 import type { CalculationResult } from './math-format';
 
-type Operation = 'system' | 'rref' | 'inverse';
+import { calculateBasic, isBasic, basicLabels } from './matrix-operations';
+import { MatrixSteps, MatrixEditor } from './MatrixOperations';
+import type { Operation } from './history/records';
 const matrixExamples = [
   {
     name: 'Lista · forma reduzida 3 × 4',
@@ -85,9 +87,28 @@ const examples = [
 export function App() {
   const [operation, setOperation] = useState<Operation>('system');
   const system = operation === 'system';
-  const samples: { name: string; a: string[][]; b?: string[] }[] = system
-    ? examples
-    : matrixExamples;
+  const basic = isBasic(operation);
+  const binary =
+    operation === 'add' || operation === 'subtract' || operation === 'multiply';
+  const [right, setRight] = useState([
+    ['1', '0', '0'],
+    ['0', '1', '0'],
+    ['0', '0', '1'],
+  ]);
+  const [scalar, setScalar] = useState('2');
+  const samples: { name: string; a: string[][]; b?: string[] }[] = basic
+    ? [
+        {
+          name: 'Exemplo com frações · 2 × 2',
+          a: [
+            ['1/2', '-2'],
+            ['3', '0'],
+          ],
+        },
+      ]
+    : system
+      ? examples
+      : matrixExamples;
   const [a, setA] = useState(examples[0]!.a);
   const [b, setB] = useState(examples[0]!.b);
   const [result, setResult] = useState<CalculationResult | null>(null);
@@ -117,6 +138,7 @@ export function App() {
   };
   const solve = (event: FormEvent) => {
     event.preventDefault();
+    setSavable(false);
     setResult(null);
     setError(null);
     for (let i = 0; i < a.length; i++) {
@@ -135,13 +157,41 @@ export function App() {
         }
       }
     }
+    if (binary || operation === 'scale') {
+      const entries = binary
+        ? right.flatMap((row, i) =>
+            row.map((value, j) => ({
+              value,
+              label: 'B, linha ' + (i + 1) + ', coluna ' + (j + 1),
+              id: 'right-' + i + '-' + j,
+            })),
+          )
+        : [{ value: scalar, label: 'Escalar', id: 'scalar-input' }];
+      for (const entry of entries) {
+        try {
+          parseScalar(entry.value);
+        } catch (cause) {
+          setError({
+            message:
+              entry.label +
+              ': ' +
+              (cause instanceof Error ? cause.message : 'Entrada inválida.'),
+            cell: entry.id,
+          });
+          document.getElementById(entry.id)?.focus();
+          return;
+        }
+      }
+    }
     try {
       setResult(
-        system
-          ? solveGaussian(a, b)
-          : operation === 'rref'
-            ? reduceMatrix(a)
-            : invertMatrix(a),
+        basic
+          ? calculateBasic(operation, a, right, scalar)
+          : system
+            ? solveGaussian(a, b)
+            : operation === 'rref'
+              ? reduceMatrix(a)
+              : invertMatrix(a),
       );
       setRevision((value) => value + 1);
       setSavable(true);
@@ -193,6 +243,11 @@ export function App() {
                 <option value="system">Resolver sistema</option>
                 <option value="rref">Forma reduzida e posto</option>
                 <option value="inverse">Matriz inversa</option>
+                {Object.entries(basicLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
               </select>
             </label>
             <label className="field">
@@ -205,6 +260,13 @@ export function App() {
                   if (!sample) return;
                   invalidate();
                   setA(sample.a.map((row) => [...row]));
+                  if (basic) {
+                    setRight([
+                      ['1', '2'],
+                      ['0', '1/3'],
+                    ]);
+                    setScalar('2/3');
+                  }
                   setB(sample.b ? [...sample.b] : sample.a.map(() => '0'));
                 }}
               >
@@ -325,6 +387,37 @@ export function App() {
                   </tbody>
                 </table>
               </div>
+              {binary && (
+                <MatrixEditor
+                  errorCell={error?.cell}
+                  value={right}
+                  onChange={(value) => {
+                    invalidate();
+                    setRight(value);
+                  }}
+                />
+              )}
+              {operation === 'scale' && (
+                <label className="field">
+                  Escalar
+                  <input
+                    id="scalar-input"
+                    aria-invalid={error?.cell === 'scalar-input'}
+                    aria-describedby={
+                      error?.cell === 'scalar-input'
+                        ? 'input-error'
+                        : 'input-help'
+                    }
+                    aria-label="Escalar"
+                    value={scalar}
+                    maxLength={INPUT_LIMITS.scalarCharacters}
+                    onChange={(event) => {
+                      invalidate();
+                      setScalar(event.target.value);
+                    }}
+                  />
+                </label>
+              )}
               <p id="input-help" className="hint">
                 Aceita inteiros, frações como -1/3 e decimais como 0,5. Células
                 vazias precisam ser preenchidas; use 0 quando necessário.
@@ -332,15 +425,31 @@ export function App() {
               <label className="field">
                 Método
                 <select aria-label="Método" key={operation}>
-                  <option value={system ? 'gauss' : 'gauss-jordan'}>
-                    {system ? 'Eliminação de Gauss' : 'Gauss-Jordan'}
+                  <option
+                    value={
+                      basic ? 'entrywise' : system ? 'gauss' : 'gauss-jordan'
+                    }
+                  >
+                    {basic
+                      ? operation === 'multiply'
+                        ? 'Produto linha-coluna'
+                        : 'Cálculo por elemento'
+                      : system
+                        ? 'Eliminação de Gauss'
+                        : 'Gauss-Jordan'}
                   </option>
                 </select>
               </label>
               <p className="hint">
-                {operation === 'inverse'
-                  ? 'A inversa exige uma matriz quadrada. O bloco identidade é acrescentado automaticamente.'
-                  : 'Outros métodos serão adicionados nas próximas entregas.'}
+                {basic
+                  ? operation === 'multiply'
+                    ? 'As colunas de A devem corresponder às linhas de B.'
+                    : binary
+                      ? 'A e B devem ter as mesmas dimensões.'
+                      : 'Acompanhe o cálculo de cada elemento da saída.'
+                  : operation === 'inverse'
+                    ? 'A inversa exige uma matriz quadrada. O bloco identidade é acrescentado automaticamente.'
+                    : 'Outros métodos serão adicionados nas próximas entregas.'}
               </p>
               {error && (
                 <p className="error" id="input-error" role="alert">
@@ -360,7 +469,11 @@ export function App() {
               Resolução
             </h2>
             {result ? (
-              <Solution key={revision} result={result} />
+              result.method === 'entrywise' ? (
+                <MatrixSteps key={revision} result={result} />
+              ) : (
+                <Solution key={revision} result={result} />
+              )
             ) : (
               <div className="empty-state">
                 <span aria-hidden="true">
@@ -391,6 +504,8 @@ export function App() {
             setOperation(saved.operation);
             setA(saved.a);
             setB(saved.b);
+            setRight(saved.right ?? [['0']]);
+            setScalar(saved.scalar ?? '1');
             setError(null);
             setResult(saved.result);
             setSavable(false);

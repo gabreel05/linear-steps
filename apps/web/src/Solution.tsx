@@ -6,7 +6,7 @@ import {
   rationalTex,
   resultTex,
   resultTitle,
-  type CalculationResult,
+  type EliminationResult as CalculationResult,
   type CalculationStep,
   stepTex,
   stepTitle,

@@ -7,11 +7,14 @@ import {
   reduceMatrix,
   invertMatrix,
 } from '@linear-steps/math-core';
+import { calculateBasic, isBasic, basicLabels } from '../matrix-operations';
+import type { BasicOperation } from '../matrix-operations';
 import { INPUT_LIMITS } from '@linear-steps/contracts';
 import type { CalculationResult } from '../math-format';
 
-export type Operation = 'system' | 'rref' | 'inverse';
+export type Operation = 'system' | 'rref' | 'inverse' | BasicOperation;
 export const labels: Record<Operation, string> = {
+  ...basicLabels,
   system: 'Sistema linear',
   rref: 'Forma reduzida',
   inverse: 'Matriz inversa',
@@ -26,6 +29,8 @@ export type SavedInput = {
   operation: Operation;
   a: string[][];
   b: string[];
+  right?: string[][];
+  scalar?: string;
   result: CalculationResult;
 };
 export type Draft = { operation: Operation; result: CalculationResult };
@@ -116,8 +121,12 @@ export function reopen(value: unknown): SavedInput {
     if (new TextEncoder().encode(JSON.stringify(row.payload)).length > 1048576)
       throw invalid();
     const p = object(row.payload);
-    const method = operation === 'system' ? 'gauss' : 'gauss-jordan';
-    const version = `${method}-1`;
+    const method = isBasic(operation)
+      ? 'entrywise'
+      : operation === 'system'
+        ? 'gauss'
+        : 'gauss-jordan';
+    const version = isBasic(operation) ? 'matrix-operations-1' : `${method}-1`;
     if (
       row.schema_version !== 1 ||
       p.schemaVersion !== 1 ||
@@ -127,6 +136,17 @@ export function reopen(value: unknown): SavedInput {
       p.algorithmVersion !== version
     )
       throw invalid();
+    if (isBasic(operation)) {
+      const input = object(p.input);
+      if (input.operation !== operation) throw invalid();
+      const a = matrix(input.left ?? input.matrix);
+      const right = input.right === undefined ? [['0']] : matrix(input.right);
+      const scalar =
+        input.scalar === undefined ? '1' : vector([input.scalar])[0]!;
+      const result = calculateBasic(operation, a, right, scalar);
+      if (canonical(result) !== canonical(p)) throw invalid();
+      return { operation, a, b: a.map(() => '0'), right, scalar, result };
+    }
     const input = operation === 'system' ? object(p.input) : null;
     const a = matrix(input ? input.coefficients : p.input);
     const b = input ? vector(input.constants) : a.map(() => '0');

@@ -43,3 +43,17 @@ Executar com duas contas reais de teste após aplicar a migração:
 6. Excluir um registro próprio, atualizar no outro dispositivo e conferir que desapareceu. Trocar de conta enquanto há consultas pendentes não deve mostrar dados da conta anterior.
 
 O SDK, a Data API e o Supabase Auth não são substituídos pelos testes locais de SQL. Esta lista continua pendente até ser executada no ambiente real.
+
+## Operações básicas de matrizes
+
+Para a interface de soma, subtração, escalar, produto e transposta, aplique também `supabase/migrations/20261010000100_matrix_operations_history.sql`, após a migração inicial. Revise e execute a transação completa no SQL Editor de desenvolvimento. Não reaplique a criação da tabela. Esta migração amplia as restrições de operação, versão e formato do payload; não remove registros nem altera RLS ou permissões.
+
+Aceite desta entrega (ainda exige execução no projeto hospedado):
+
+1. Escolha cada operação e carregue o exemplo com frações. Confira resultado, etapas e elementos destacados. No produto, uma linha de A e uma coluna de B ficam destacadas. Na transposta, confira a troca dos índices.
+2. Salve um cálculo de cada operação, recarregue e reabra pelo histórico. Confira operação, A, B ou escalar, resultado e etapas. Edite um valor: o resultado anterior deve desaparecer até resolver novamente.
+3. Para produto, use A = [[1, 2, 3], [4, 5, 6]] e B = [[1], [0], [-1]]. Resultado esperado C = [[-2], [-2]]. Troque B para duas linhas: deve ocorrer erro de dimensões, sem resultado para salvar.
+4. Na mesma conta em outro navegador, confira os novos cálculos após atualizar e os filtros de operação. Em outra conta, confirme que eles não aparecem.
+5. Reabra um sistema, uma forma reduzida e uma inversa salvos antes da migração. Seus resultados devem continuar acessíveis.
+
+Os testes locais executam as duas migrações em PostgreSQL (PGlite), preservam um registro preexistente e verificam isolamento entre contas. Isso não substitui os testes de autenticação e persistência no Supabase hospedado.
