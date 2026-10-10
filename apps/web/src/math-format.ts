@@ -1,4 +1,5 @@
 import type {
+  DeterminantResult,
   MatrixOperationResult,
   AffineValue,
   GaussianSolution,
@@ -11,7 +12,8 @@ import type {
   SerializedVector,
 } from '@linear-steps/contracts';
 
-export type CalculationResult = EliminationResult | MatrixOperationResult;
+export type CalculationResult =
+  EliminationResult | MatrixOperationResult | DeterminantResult;
 export type EliminationResult =
   GaussianSolution | ReductionResult | InverseResult;
 export type CalculationStep = GaussianStep | ReductionStep;
