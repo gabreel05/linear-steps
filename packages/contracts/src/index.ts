@@ -8,6 +8,11 @@ export type SystemClassification = 'unique' | 'infinite' | 'inconsistent';
 
 export { INPUT_LIMITS } from './limits';
 export type {
+  MatrixCellStep,
+  MatrixOperationInput,
+  MatrixOperationResult,
+} from './matrix-operations';
+export type {
   ReductionStep,
   ReductionResult,
   InverseResult,

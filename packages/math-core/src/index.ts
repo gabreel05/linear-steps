@@ -1,6 +1,13 @@
 export { Rational } from './rational';
 export { solveGaussian } from './gaussian';
 export { reduceMatrix, invertMatrix } from './reduction';
+export {
+  addMatrices,
+  subtractMatrices,
+  scaleMatrix,
+  multiplyMatrices,
+  transposeMatrix,
+} from './matrix-operations';
 export { MathInputError, type MathErrorCode } from './errors';
 export {
   parseScalar,
