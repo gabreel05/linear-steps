@@ -8,6 +8,13 @@ export type SystemClassification = 'unique' | 'infinite' | 'inconsistent';
 
 export { INPUT_LIMITS } from './limits';
 export type {
+  DeterminantMethod,
+  DeterminantOptions,
+  DeterminantExpansion,
+  DeterminantRowStep,
+  DeterminantResult,
+} from './determinant';
+export type {
   MatrixCellStep,
   MatrixOperationInput,
   MatrixOperationResult,
