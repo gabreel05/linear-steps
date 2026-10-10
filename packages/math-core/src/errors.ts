@@ -1,4 +1,5 @@
 export type MathErrorCode =
+  | 'INVALID_METHOD'
   | 'INVALID_SCALAR'
   | 'INPUT_LIMIT'
   | 'DIVISION_BY_ZERO'
