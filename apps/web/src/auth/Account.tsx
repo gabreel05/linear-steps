@@ -223,8 +223,7 @@ function ConnectedAccount({ controller }: { controller: AccountController }) {
           )}
           {message && <p role="status">{message}</p>}
           <p className="hint">
-            O histórico sincronizado será disponibilizado em uma próxima
-            entrega.
+            Seus cálculos podem ser salvos no histórico desta conta.
           </p>
         </>
       )}

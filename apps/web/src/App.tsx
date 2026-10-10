@@ -9,6 +9,7 @@ import {
 } from '@linear-steps/math-core';
 import { Solution } from './Solution';
 import { Account } from './auth/Account';
+import { History } from './history/History';
 import type { CalculationResult } from './math-format';
 
 type Operation = 'system' | 'rref' | 'inverse';
@@ -94,12 +95,14 @@ export function App() {
     null,
   );
   const [revision, setRevision] = useState(0);
+  const [savable, setSavable] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (result) heading.current?.focus();
   }, [result]);
 
   const invalidate = () => {
+    setSavable(false);
     setResult(null);
     setError(null);
   };
@@ -141,6 +144,7 @@ export function App() {
             : invertMatrix(a),
       );
       setRevision((value) => value + 1);
+      setSavable(true);
     } catch (cause) {
       setError({
         message:
@@ -380,10 +384,23 @@ export function App() {
             )}
           </section>
         </div>
+        <History
+          draft={result && savable ? { operation, result } : null}
+          revision={revision}
+          onOpen={(saved) => {
+            setOperation(saved.operation);
+            setA(saved.a);
+            setB(saved.b);
+            setError(null);
+            setResult(saved.result);
+            setSavable(false);
+            setRevision((value) => value + 1);
+          }}
+        />
       </main>
       <footer>
         <span>Linear Steps · Feito para aprender.</span>
-        <span>Histórico e exportação em desenvolvimento.</span>
+        <span>Histórico na sua conta · Exportação em desenvolvimento.</span>
       </footer>
     </div>
   );

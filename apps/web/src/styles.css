@@ -420,3 +420,29 @@ footer {
     width: 100%;
   }
 }
+.history-panel {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 1px solid #d8ddd3;
+  border-radius: 12px;
+  background: #fffefa;
+}
+.history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+.save-calculation {
+  max-width: 32rem;
+  margin-bottom: 1.5rem;
+}
+.history-list {
+  list-style: none;
+  padding: 0;
+}
+.history-list li {
+  padding: 1rem 0;
+  border-bottom: 1px solid #d8ddd3;
+  overflow-wrap: anywhere;
+}
