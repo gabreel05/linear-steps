@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
+  determinant,
   addMatrices,
   subtractMatrices,
   scaleMatrix,
@@ -85,6 +86,20 @@ beforeAll(async () => {
     await readFile(
       new URL(
         '../supabase/migrations/20261010000100_matrix_operations_history.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  await identity(alice);
+  expect(
+    (await db.query('select payload from public.calculations')).rows,
+  ).toEqual([{ payload: solution }]);
+  await db.exec('reset role');
+  await db.exec(
+    await readFile(
+      new URL(
+        '../supabase/migrations/20261010000200_determinant_history.sql',
         import.meta.url,
       ),
       'utf8',
@@ -391,4 +406,55 @@ it('rejects mismatched operation, missing operands and unsupported matrix algori
     values(payload, 'add', 'entrywise', 'matrix-operations-2'),
   ])
     await expect(db.query(insertSql, data)).rejects.toThrow();
+});
+
+it.each(['formula', 'sarrus', 'laplace', 'triangular'] as const)(
+  'stores determinant %s and isolates owners',
+  async (method) => {
+    const matrix =
+      method === 'formula'
+        ? [
+            ['1', '2'],
+            ['3', '4'],
+          ]
+        : [
+            ['3', '1', '-2'],
+            ['-5', '4', '-6'],
+            ['0', '2', '7'],
+          ];
+    const payload = determinant(
+      matrix,
+      method === 'laplace' ? { method, axis: 'column', index: 1 } : { method },
+    );
+    await db.query(
+      insertSql,
+      values(payload, 'determinant', method, 'determinant-1'),
+    );
+    expect(
+      (await db.query('select payload from public.calculations')).rows,
+    ).toEqual([{ payload }]);
+    await identity(bob);
+    expect(
+      (await db.query('select * from public.calculations')).rows,
+    ).toHaveLength(0);
+    await db.query('delete from public.calculations where id=$1', [id]);
+    await identity(alice);
+    expect(
+      (await db.query('select * from public.calculations')).rows,
+    ).toHaveLength(1);
+  },
+);
+it('rejects incompatible determinant metadata and missing proof', async () => {
+  const payload = determinant([['1']], { method: 'triangular' });
+  for (const p of [
+    { ...payload, proof: null },
+    { ...payload, options: { method: 'sarrus' } },
+    { ...payload, algorithmVersion: 'determinant-2' },
+  ])
+    await expect(
+      db.query(
+        insertSql,
+        values(p, 'determinant', 'triangular', 'determinant-1'),
+      ),
+    ).rejects.toThrow();
 });

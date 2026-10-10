@@ -6,18 +6,21 @@ import {
   solveGaussian,
   reduceMatrix,
   invertMatrix,
+  determinant,
 } from '@linear-steps/math-core';
 import { calculateBasic, isBasic, basicLabels } from '../matrix-operations';
 import type { BasicOperation } from '../matrix-operations';
-import { INPUT_LIMITS } from '@linear-steps/contracts';
+import { INPUT_LIMITS, type DeterminantOptions } from '@linear-steps/contracts';
 import type { CalculationResult } from '../math-format';
 
-export type Operation = 'system' | 'rref' | 'inverse' | BasicOperation;
+export type Operation =
+  'system' | 'rref' | 'inverse' | 'determinant' | BasicOperation;
 export const labels: Record<Operation, string> = {
   ...basicLabels,
   system: 'Sistema linear',
   rref: 'Forma reduzida',
   inverse: 'Matriz inversa',
+  determinant: 'Determinante',
 };
 export type Summary = {
   id: string;
@@ -31,6 +34,7 @@ export type SavedInput = {
   b: string[];
   right?: string[][];
   scalar?: string;
+  determinantOptions?: DeterminantOptions;
   result: CalculationResult;
 };
 export type Draft = { operation: Operation; result: CalculationResult };
@@ -121,6 +125,27 @@ export function reopen(value: unknown): SavedInput {
     if (new TextEncoder().encode(JSON.stringify(row.payload)).length > 1048576)
       throw invalid();
     const p = object(row.payload);
+    if (operation === 'determinant') {
+      if (
+        row.schema_version !== 1 ||
+        p.schemaVersion !== 1 ||
+        row.algorithm_version !== 'determinant-1' ||
+        p.algorithmVersion !== 'determinant-1' ||
+        row.method !== p.method
+      )
+        throw invalid();
+      const options = object(p.options) as DeterminantOptions;
+      const a = matrix(p.input);
+      const result = determinant(a, options);
+      if (canonical(result) !== canonical(p)) throw invalid();
+      return {
+        operation,
+        a,
+        b: a.map(() => '0'),
+        determinantOptions: result.options,
+        result,
+      };
+    }
     const method = isBasic(operation)
       ? 'entrywise'
       : operation === 'system'

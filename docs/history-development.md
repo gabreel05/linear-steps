@@ -57,3 +57,14 @@ Aceite desta entrega (ainda exige execução no projeto hospedado):
 5. Reabra um sistema, uma forma reduzida e uma inversa salvos antes da migração. Seus resultados devem continuar acessíveis.
 
 Os testes locais executam as duas migrações em PostgreSQL (PGlite), preservam um registro preexistente e verificam isolamento entre contas. Isso não substitui os testes de autenticação e persistência no Supabase hospedado.
+
+## Determinantes
+
+Após as duas migrações anteriores, executar `supabase/migrations/20261010000200_determinant_history.sql` no SQL Editor do projeto de desenvolvimento. Não recriar a tabela. A migração é transacional e deve ser aplicada uma vez.
+
+1. Selecionar Determinante e carregar “Lista · determinante 175”. Resolver por Sarrus, Laplace pela coluna 2 e triangularização: todos devem resultar em 175. Navegar pelas etapas e usar “Ir para etapa”; conferir fatores, menores, pivô e operações de linha. Salvar cada método com título diferente.
+2. Alterar para fórmula direta na matriz 3 × 3: deve informar incompatibilidade. Usar a matriz 2 × 2 `[[1/2, 0], [0, 3]]`: o resultado deve ser 3/2. Salvar. Alterar entrada, método ou índice de Laplace deve limpar a resolução anterior.
+3. Recarregar a página e reabrir os quatro registros. Conferir matriz, método, resultado e, em Laplace, coluna 2. Reabrir também um registro antigo de sistema ou operação matricial.
+4. Em outro navegador com a mesma conta, conferir os registros e reabrir Laplace. Em uma segunda conta, esses registros não devem aparecer. Se o salvamento falhar, verificar a aplicação da terceira migração antes de repetir.
+
+Os testes automatizados cobrem métodos, fórmulas KaTeX, entrada incompatível, invalidação, restauração e rejeição de resultados adulterados; os testes SQL cobrem as três migrações e isolamento por proprietário. O aceite hospedado acima precisa ser confirmado separadamente.

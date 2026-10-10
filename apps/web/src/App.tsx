@@ -1,13 +1,20 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { INPUT_LIMITS } from '@linear-steps/contracts';
+import {
+  INPUT_LIMITS,
+  type DeterminantMethod,
+  type DeterminantOptions,
+} from '@linear-steps/contracts';
 import {
   MathInputError,
   parseScalar,
   solveGaussian,
   reduceMatrix,
   invertMatrix,
+  determinant,
 } from '@linear-steps/math-core';
 import { Solution } from './Solution';
+import { DeterminantSteps } from './Determinant';
+import { determinantLabels } from './determinant-steps';
 import { Account } from './auth/Account';
 import { History } from './history/History';
 import type { CalculationResult } from './math-format';
@@ -87,6 +94,13 @@ const examples = [
 export function App() {
   const [operation, setOperation] = useState<Operation>('system');
   const system = operation === 'system';
+  const [detMethod, setDetMethod] = useState<DeterminantMethod>('triangular');
+  const [axis, setAxis] = useState<'row' | 'column'>('row');
+  const [expansionIndex, setExpansionIndex] = useState(0);
+  const detOptions: DeterminantOptions =
+    detMethod === 'laplace'
+      ? { method: detMethod, axis, index: expansionIndex }
+      : { method: detMethod };
   const basic = isBasic(operation);
   const binary =
     operation === 'add' || operation === 'subtract' || operation === 'multiply';
@@ -108,7 +122,19 @@ export function App() {
       ]
     : system
       ? examples
-      : matrixExamples;
+      : operation === 'determinant'
+        ? [
+            {
+              name: 'Lista · determinante 175',
+              a: [
+                ['3', '1', '-2'],
+                ['-5', '4', '-6'],
+                ['0', '2', '7'],
+              ],
+            },
+            ...matrixExamples,
+          ]
+        : matrixExamples;
   const [a, setA] = useState(examples[0]!.a);
   const [b, setB] = useState(examples[0]!.b);
   const [result, setResult] = useState<CalculationResult | null>(null);
@@ -185,13 +211,15 @@ export function App() {
     }
     try {
       setResult(
-        basic
-          ? calculateBasic(operation, a, right, scalar)
-          : system
-            ? solveGaussian(a, b)
-            : operation === 'rref'
-              ? reduceMatrix(a)
-              : invertMatrix(a),
+        operation === 'determinant'
+          ? determinant(a, detOptions)
+          : basic
+            ? calculateBasic(operation, a, right, scalar)
+            : system
+              ? solveGaussian(a, b)
+              : operation === 'rref'
+                ? reduceMatrix(a)
+                : invertMatrix(a),
       );
       setRevision((value) => value + 1);
       setSavable(true);
@@ -243,6 +271,7 @@ export function App() {
                 <option value="system">Resolver sistema</option>
                 <option value="rref">Forma reduzida e posto</option>
                 <option value="inverse">Matriz inversa</option>
+                <option value="determinant">Determinante</option>
                 {Object.entries(basicLabels).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
@@ -422,24 +451,88 @@ export function App() {
                 Aceita inteiros, frações como -1/3 e decimais como 0,5. Células
                 vazias precisam ser preenchidas; use 0 quando necessário.
               </p>
-              <label className="field">
-                Método
-                <select aria-label="Método" key={operation}>
-                  <option
-                    value={
-                      basic ? 'entrywise' : system ? 'gauss' : 'gauss-jordan'
-                    }
-                  >
-                    {basic
-                      ? operation === 'multiply'
-                        ? 'Produto linha-coluna'
-                        : 'Cálculo por elemento'
-                      : system
-                        ? 'Eliminação de Gauss'
-                        : 'Gauss-Jordan'}
-                  </option>
-                </select>
-              </label>
+              {operation === 'determinant' ? (
+                <>
+                  <label className="field">
+                    Método
+                    <select
+                      aria-label="Método"
+                      value={detMethod}
+                      onChange={(e) => {
+                        invalidate();
+                        setDetMethod(e.target.value as DeterminantMethod);
+                      }}
+                    >
+                      {Object.entries(determinantLabels).map(
+                        ([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ),
+                      )}
+                    </select>
+                  </label>
+                  {detMethod === 'laplace' && (
+                    <div className="dimensions">
+                      <label className="field">
+                        Expandir por
+                        <select
+                          aria-label="Expandir por"
+                          value={axis}
+                          onChange={(e) => {
+                            invalidate();
+                            setAxis(e.target.value as 'row' | 'column');
+                          }}
+                        >
+                          <option value="row">Linha</option>
+                          <option value="column">Coluna</option>
+                        </select>
+                      </label>
+                      <label className="field">
+                        Índice da expansão
+                        <select
+                          aria-label="Índice da expansão"
+                          value={expansionIndex}
+                          onChange={(e) => {
+                            invalidate();
+                            setExpansionIndex(Number(e.target.value));
+                          }}
+                        >
+                          {Array.from({ length: 6 }, (_, i) => (
+                            <option key={i} value={i}>
+                              {i + 1}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  )}
+                  <p className="hint">
+                    Exige matriz quadrada. O método selecionado será mantido;
+                    dimensões ou índices incompatíveis serão informados ao
+                    resolver.
+                  </p>
+                </>
+              ) : (
+                <label className="field">
+                  Método
+                  <select aria-label="Método" key={operation}>
+                    <option
+                      value={
+                        basic ? 'entrywise' : system ? 'gauss' : 'gauss-jordan'
+                      }
+                    >
+                      {basic
+                        ? operation === 'multiply'
+                          ? 'Produto linha-coluna'
+                          : 'Cálculo por elemento'
+                        : system
+                          ? 'Eliminação de Gauss'
+                          : 'Gauss-Jordan'}
+                    </option>
+                  </select>
+                </label>
+              )}
               <p className="hint">
                 {basic
                   ? operation === 'multiply'
@@ -449,7 +542,9 @@ export function App() {
                       : 'Acompanhe o cálculo de cada elemento da saída.'
                   : operation === 'inverse'
                     ? 'A inversa exige uma matriz quadrada. O bloco identidade é acrescentado automaticamente.'
-                    : 'Outros métodos serão adicionados nas próximas entregas.'}
+                    : operation === 'determinant'
+                      ? 'Percorra os produtos, menores ou operações de linha do método escolhido.'
+                      : 'Outros métodos serão adicionados nas próximas entregas.'}
               </p>
               {error && (
                 <p className="error" id="input-error" role="alert">
@@ -471,6 +566,8 @@ export function App() {
             {result ? (
               result.method === 'entrywise' ? (
                 <MatrixSteps key={revision} result={result} />
+              ) : 'proof' in result ? (
+                <DeterminantSteps key={revision} result={result} />
               ) : (
                 <Solution key={revision} result={result} />
               )
@@ -506,6 +603,13 @@ export function App() {
             setB(saved.b);
             setRight(saved.right ?? [['0']]);
             setScalar(saved.scalar ?? '1');
+            if (saved.determinantOptions) {
+              setDetMethod(saved.determinantOptions.method);
+              if (saved.determinantOptions.method === 'laplace') {
+                setAxis(saved.determinantOptions.axis);
+                setExpansionIndex(saved.determinantOptions.index);
+              }
+            }
             setError(null);
             setResult(saved.result);
             setSavable(false);
