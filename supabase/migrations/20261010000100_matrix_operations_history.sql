@@ -1,0 +1,56 @@
+begin;
+
+-- Extend immutable snapshots; existing rows, privileges and RLS remain in place.
+alter table public.calculations drop constraint calculations_operation_check;
+alter table public.calculations add constraint calculations_operation_check
+  check (operation in ('system', 'rref', 'inverse', 'add', 'subtract', 'scale', 'multiply', 'transpose'));
+alter table public.calculations drop constraint calculations_method_version;
+alter table public.calculations add constraint calculations_method_version check (
+  (operation = 'system' and method = 'gauss' and algorithm_version = 'gauss-1')
+  or (operation in ('rref', 'inverse') and method = 'gauss-jordan' and algorithm_version = 'gauss-jordan-1')
+  or (operation in ('add', 'subtract', 'scale', 'multiply', 'transpose') and method = 'entrywise' and algorithm_version = 'matrix-operations-1')
+);
+alter table public.calculations drop constraint calculations_payload_envelope;
+alter table public.calculations add
+  constraint calculations_payload_envelope check (coalesce(
+    jsonb_typeof(payload) = 'object'
+    and payload->'schemaVersion' = to_jsonb(schema_version)
+    and payload->>'algorithmVersion' = algorithm_version
+    and payload->>'method' = method
+    and jsonb_typeof(payload->'steps') = 'array'
+    and (operation in ('add', 'subtract', 'scale', 'multiply', 'transpose') or (jsonb_typeof(payload->'pivots') = 'array' and jsonb_typeof(payload->'rank') = 'number'))
+    and case operation
+      when 'system' then
+        jsonb_typeof(payload->'input') = 'object'
+        and jsonb_typeof(payload->'input'->'coefficients') = 'array'
+        and jsonb_typeof(payload->'input'->'constants') = 'array'
+        and jsonb_typeof(payload->'echelon') = 'array'
+        and payload->>'classification' in ('unique', 'infinite', 'inconsistent')
+      when 'rref' then
+        jsonb_typeof(payload->'input') = 'array'
+        and jsonb_typeof(payload->'reduced') = 'array'
+        and not (payload ? 'classification')
+      when 'inverse' then
+        jsonb_typeof(payload->'input') = 'array'
+        and jsonb_typeof(payload->'reduced') = 'array'
+        and (payload->>'classification' = 'singular'
+          or (payload->>'classification' = 'invertible'
+              and jsonb_typeof(payload->'inverse') = 'array'))
+      else operation in ('add', 'subtract', 'scale', 'multiply', 'transpose')
+        and jsonb_typeof(payload->'input') = 'object'
+        and payload->'input'->>'operation' = operation
+        and jsonb_typeof(payload->'result') = 'array'
+        and case
+          when operation in ('add', 'subtract', 'multiply') then
+            jsonb_typeof(payload->'input'->'left') = 'array'
+            and jsonb_typeof(payload->'input'->'right') = 'array'
+          when operation = 'scale' then
+            jsonb_typeof(payload->'input'->'matrix') = 'array'
+            and jsonb_typeof(payload->'input'->'scalar') = 'object'
+          else jsonb_typeof(payload->'input'->'matrix') = 'array'
+        end
+    end,
+    false
+  ));
+
+commit;

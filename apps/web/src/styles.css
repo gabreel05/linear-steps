@@ -446,3 +446,28 @@ footer {
   border-bottom: 1px solid #d8ddd3;
   overflow-wrap: anywhere;
 }
+.second-matrix {
+  margin: 1rem 0;
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 10px;
+  padding: 1rem;
+  min-width: 0;
+}
+.matrix-active {
+  background: #d6efe7;
+  color: #123d32;
+  outline: 2px solid #287c64;
+  outline-offset: -2px;
+}
+.step-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+.cell-expression {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0.5rem;
+}
