@@ -32,3 +32,4 @@ export type {
   GaussianStep,
   GaussianSolution,
 } from './gaussian';
+export type { CramerResult, InverseSystemResult } from './system-methods';

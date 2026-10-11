@@ -23,3 +23,4 @@ export type {
   SerializedRational,
   SystemClassification,
 } from '@linear-steps/contracts';
+export { solveCramer, solveByInverse } from './system-methods';
