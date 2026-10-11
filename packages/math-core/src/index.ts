@@ -24,3 +24,4 @@ export type {
   SystemClassification,
 } from '@linear-steps/contracts';
 export { solveCramer, solveByInverse } from './system-methods';
+export { invertByAdjugate } from './adjugate';
