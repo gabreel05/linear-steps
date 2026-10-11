@@ -33,3 +33,4 @@ export type {
   GaussianSolution,
 } from './gaussian';
 export type { CramerResult, InverseSystemResult } from './system-methods';
+export type { CofactorStep, AdjugateInverseResult } from './adjugate';
