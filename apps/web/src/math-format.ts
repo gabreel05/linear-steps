@@ -1,4 +1,6 @@
 import type {
+  CramerResult,
+  InverseSystemResult,
   DeterminantResult,
   MatrixOperationResult,
   AffineValue,
@@ -13,7 +15,11 @@ import type {
 } from '@linear-steps/contracts';
 
 export type CalculationResult =
-  EliminationResult | MatrixOperationResult | DeterminantResult;
+  | CramerResult
+  | InverseSystemResult
+  | EliminationResult
+  | MatrixOperationResult
+  | DeterminantResult;
 export type EliminationResult =
   GaussianSolution | ReductionResult | InverseResult;
 export type CalculationStep = GaussianStep | ReductionStep;
