@@ -8,11 +8,14 @@ import {
   MathInputError,
   parseScalar,
   solveGaussian,
+  solveCramer,
+  solveByInverse,
   reduceMatrix,
   invertMatrix,
   determinant,
 } from '@linear-steps/math-core';
 import { Solution } from './Solution';
+import { SystemMethods } from './SystemMethods';
 import { DeterminantSteps } from './Determinant';
 import { determinantLabels } from './determinant-steps';
 import { Account } from './auth/Account';
@@ -94,6 +97,9 @@ const examples = [
 export function App() {
   const [operation, setOperation] = useState<Operation>('system');
   const system = operation === 'system';
+  const [systemMethod, setSystemMethod] = useState<
+    'gauss' | 'cramer' | 'inverse'
+  >('gauss');
   const [detMethod, setDetMethod] = useState<DeterminantMethod>('triangular');
   const [axis, setAxis] = useState<'row' | 'column'>('row');
   const [expansionIndex, setExpansionIndex] = useState(0);
@@ -216,7 +222,11 @@ export function App() {
           : basic
             ? calculateBasic(operation, a, right, scalar)
             : system
-              ? solveGaussian(a, b)
+              ? systemMethod === 'cramer'
+                ? solveCramer(a, b)
+                : systemMethod === 'inverse'
+                  ? solveByInverse(a, b)
+                  : solveGaussian(a, b)
               : operation === 'rref'
                 ? reduceMatrix(a)
                 : invertMatrix(a),
@@ -516,7 +526,23 @@ export function App() {
               ) : (
                 <label className="field">
                   Método
-                  <select aria-label="Método" key={operation}>
+                  <select
+                    aria-label="Método"
+                    key={operation}
+                    value={
+                      system
+                        ? systemMethod
+                        : basic
+                          ? 'entrywise'
+                          : 'gauss-jordan'
+                    }
+                    onChange={(e) => {
+                      invalidate();
+                      setSystemMethod(
+                        e.target.value as 'gauss' | 'cramer' | 'inverse',
+                      );
+                    }}
+                  >
                     <option
                       value={
                         basic ? 'entrywise' : system ? 'gauss' : 'gauss-jordan'
@@ -530,6 +556,16 @@ export function App() {
                           ? 'Eliminação de Gauss'
                           : 'Gauss-Jordan'}
                     </option>
+                    {system && (
+                      <>
+                        <option value="cramer">
+                          Regra de Cramer (até ordem 4)
+                        </option>
+                        <option value="inverse">
+                          Matriz inversa (até ordem 6)
+                        </option>
+                      </>
+                    )}
                   </select>
                 </label>
               )}
@@ -551,6 +587,17 @@ export function App() {
                   {error.message}
                 </p>
               )}
+              {error && system && systemMethod !== 'gauss' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    invalidate();
+                    setSystemMethod('gauss');
+                  }}
+                >
+                  Selecionar Gauss
+                </button>
+              )}
               <button className="primary" type="submit">
                 Resolver passo a passo
               </button>
@@ -564,7 +611,16 @@ export function App() {
               Resolução
             </h2>
             {result ? (
-              result.method === 'entrywise' ? (
+              result.method === 'cramer' || result.method === 'inverse' ? (
+                <SystemMethods
+                  key={revision}
+                  result={result}
+                  onChooseGauss={() => {
+                    invalidate();
+                    setSystemMethod('gauss');
+                  }}
+                />
+              ) : result.method === 'entrywise' ? (
                 <MatrixSteps key={revision} result={result} />
               ) : 'proof' in result ? (
                 <DeterminantSteps key={revision} result={result} />
@@ -599,6 +655,13 @@ export function App() {
           revision={revision}
           onOpen={(saved) => {
             setOperation(saved.operation);
+            if (
+              saved.operation === 'system' &&
+              (saved.result.method === 'gauss' ||
+                saved.result.method === 'cramer' ||
+                saved.result.method === 'inverse')
+            )
+              setSystemMethod(saved.result.method);
             setA(saved.a);
             setB(saved.b);
             setRight(saved.right ?? [['0']]);

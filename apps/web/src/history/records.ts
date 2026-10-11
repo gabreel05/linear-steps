@@ -4,6 +4,8 @@ import {
   parseMatrix,
   parseVector,
   solveGaussian,
+  solveCramer,
+  solveByInverse,
   reduceMatrix,
   invertMatrix,
   determinant,
@@ -125,6 +127,27 @@ export function reopen(value: unknown): SavedInput {
     if (new TextEncoder().encode(JSON.stringify(row.payload)).length > 1048576)
       throw invalid();
     const p = object(row.payload);
+    if (
+      operation === 'system' &&
+      (p.method === 'cramer' || p.method === 'inverse')
+    ) {
+      const version = p.method === 'cramer' ? 'cramer-1' : 'inverse-system-1';
+      if (
+        row.schema_version !== 1 ||
+        p.schemaVersion !== 1 ||
+        row.method !== p.method ||
+        row.algorithm_version !== version ||
+        p.algorithmVersion !== version
+      )
+        throw invalid();
+      const input = object(p.input);
+      const a = matrix(input.coefficients),
+        b = vector(input.constants);
+      const result =
+        p.method === 'cramer' ? solveCramer(a, b) : solveByInverse(a, b);
+      if (canonical(result) !== canonical(p)) throw invalid();
+      return { operation, a, b, result };
+    }
     if (operation === 'determinant') {
       if (
         row.schema_version !== 1 ||

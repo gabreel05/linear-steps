@@ -11,6 +11,8 @@ import {
   invertMatrix,
   reduceMatrix,
   solveGaussian,
+  solveCramer,
+  solveByInverse,
 } from '../packages/math-core/src/index';
 
 // Real PostgreSQL engine, with only the Supabase identity boundary substituted.
@@ -100,6 +102,20 @@ beforeAll(async () => {
     await readFile(
       new URL(
         '../supabase/migrations/20261010000200_determinant_history.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  await identity(alice);
+  expect(
+    (await db.query('select payload from public.calculations')).rows,
+  ).toEqual([{ payload: solution }]);
+  await db.exec('reset role');
+  await db.exec(
+    await readFile(
+      new URL(
+        '../supabase/migrations/20261010000300_system_methods_history.sql',
         import.meta.url,
       ),
       'utf8',
@@ -456,5 +472,56 @@ it('rejects incompatible determinant metadata and missing proof', async () => {
         insertSql,
         values(p, 'determinant', 'triangular', 'determinant-1'),
       ),
+    ).rejects.toThrow();
+});
+
+it.each([solveCramer, solveByInverse])(
+  'stores new system methods and preserves owner isolation',
+  async (solver) => {
+    for (const singular of [false, true]) {
+      const payload = solver(
+        singular
+          ? [
+              ['1', '1'],
+              ['2', '2'],
+            ]
+          : [
+              ['2', '1'],
+              ['0', '3'],
+            ],
+        ['2', '4'],
+      );
+      await db.query(
+        insertSql,
+        values(
+          payload,
+          'system',
+          payload.method,
+          payload.algorithmVersion,
+          singular ? otherId : id,
+        ),
+      );
+    }
+    await identity(bob);
+    expect(
+      (await db.query('select * from public.calculations')).rows,
+    ).toHaveLength(0);
+    await db.query('delete from public.calculations');
+    await identity(alice);
+    expect(
+      (await db.query('select * from public.calculations')).rows,
+    ).toHaveLength(2);
+  },
+);
+it('rejects malformed system-method envelopes', async () => {
+  const payload = solveCramer([['1']], ['2']);
+  for (const p of [
+    { ...payload, determinant: null },
+    { ...payload, status: 'unknown' },
+    { ...payload, solution: null },
+    { ...payload, algorithmVersion: 'cramer-2' },
+  ])
+    await expect(
+      db.query(insertSql, values(p, 'system', 'cramer', 'cramer-1')),
     ).rejects.toThrow();
 });

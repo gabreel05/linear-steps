@@ -68,3 +68,14 @@ Após as duas migrações anteriores, executar `supabase/migrations/202610100002
 4. Em outro navegador com a mesma conta, conferir os registros e reabrir Laplace. Em uma segunda conta, esses registros não devem aparecer. Se o salvamento falhar, verificar a aplicação da terceira migração antes de repetir.
 
 Os testes automatizados cobrem métodos, fórmulas KaTeX, entrada incompatível, invalidação, restauração e rejeição de resultados adulterados; os testes SQL cobrem as três migrações e isolamento por proprietário. O aceite hospedado acima precisa ser confirmado separadamente.
+
+## Sistemas por Cramer e inversa
+
+Executar `supabase/migrations/20261010000300_system_methods_history.sql` uma vez no SQL Editor de desenvolvimento, após as três migrações anteriores.
+
+1. Em Resolver sistema, carregar o exemplo da lista. Resolver por Cramer e por matriz inversa: ambos devem retornar (1, 2, 3). Percorrer o cálculo de cada incógnita e as etapas internas. Salvar os dois resultados com títulos distintos.
+2. Carregar Infinitas soluções e usar cada método novo: deve informar que o método não se aplica, sem afirmar inexistência de solução. Selecionar Gauss e resolver novamente deve classificar SPI. Repetir com Nenhuma solução: Gauss deve classificar SI. Uma matriz retangular deve produzir erro com opção explícita para selecionar Gauss.
+3. Recarregar e reabrir os novos registros: conferir A, b, método, resultado e navegação. Reabrir também um registro antigo de Gauss e um de determinante.
+4. Na mesma conta em outro navegador, conferir e reabrir os dois registros. Em outra conta, esses registros não devem aparecer.
+
+Testes locais de SQL e de interface não substituem essa conferência hospedada entre sessões.
