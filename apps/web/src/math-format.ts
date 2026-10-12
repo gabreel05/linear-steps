@@ -1,4 +1,5 @@
 import type {
+  AdjugateInverseResult,
   CramerResult,
   InverseSystemResult,
   DeterminantResult,
@@ -15,6 +16,7 @@ import type {
 } from '@linear-steps/contracts';
 
 export type CalculationResult =
+  | AdjugateInverseResult
   | CramerResult
   | InverseSystemResult
   | EliminationResult

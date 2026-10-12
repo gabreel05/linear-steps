@@ -9,6 +9,7 @@ import {
   multiplyMatrices,
   transposeMatrix,
   invertMatrix,
+  invertByAdjugate,
   reduceMatrix,
   solveGaussian,
   solveCramer,
@@ -125,10 +126,65 @@ beforeAll(async () => {
   expect(
     (await db.query('select payload from public.calculations')).rows,
   ).toEqual([{ payload: solution }]);
+  await db.exec('reset role');
+  await db.exec(
+    await readFile(
+      new URL(
+        '../supabase/migrations/20261011000100_adjugate_history.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  await identity(alice);
+  expect(
+    (await db.query('select payload from public.calculations')).rows,
+  ).toEqual([{ payload: solution }]);
 }, 60000);
 beforeEach(async () => {
   await db.exec('reset role; truncate public.calculations');
   await identity(alice);
+});
+
+it('stores adjugate snapshots with owner isolation and rejects malformed proofs', async () => {
+  for (const singular of [false, true]) {
+    const payload = invertByAdjugate([[singular ? '0' : '2']]);
+    await db.query(
+      insertSql,
+      values(
+        payload,
+        'inverse',
+        'adjugate',
+        'adjugate-inverse-1',
+        singular ? otherId : id,
+      ),
+    );
+  }
+  await identity(bob);
+  expect(
+    (await db.query('select * from public.calculations')).rows,
+  ).toHaveLength(0);
+  await db.query('delete from public.calculations');
+  await identity(alice);
+  expect(
+    (await db.query('select * from public.calculations')).rows,
+  ).toHaveLength(2);
+  await db.exec('delete from public.calculations');
+  const payload = invertByAdjugate([['2']]);
+  for (const p of [
+    { ...payload, adjugate: null },
+    { ...payload, determinant: null },
+    { ...payload, factor: null },
+    { ...payload, classification: 'singular' },
+    { ...payload, algorithmVersion: 'bad' },
+  ]) {
+    await expect(
+      db.query(
+        insertSql,
+        values(p, 'inverse', 'adjugate', 'adjugate-inverse-1'),
+      ),
+    ).rejects.toThrow();
+  }
 });
 afterAll(async () => {
   await db?.close();

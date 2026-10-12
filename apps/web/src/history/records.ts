@@ -8,6 +8,7 @@ import {
   solveByInverse,
   reduceMatrix,
   invertMatrix,
+  invertByAdjugate,
   determinant,
 } from '@linear-steps/math-core';
 import { calculateBasic, isBasic, basicLabels } from '../matrix-operations';
@@ -127,6 +128,20 @@ export function reopen(value: unknown): SavedInput {
     if (new TextEncoder().encode(JSON.stringify(row.payload)).length > 1048576)
       throw invalid();
     const p = object(row.payload);
+    if (operation === 'inverse' && p.method === 'adjugate') {
+      if (
+        row.schema_version !== 1 ||
+        p.schemaVersion !== 1 ||
+        row.method !== p.method ||
+        row.algorithm_version !== 'adjugate-inverse-1' ||
+        p.algorithmVersion !== 'adjugate-inverse-1'
+      )
+        throw invalid();
+      const a = matrix(p.input);
+      const result = invertByAdjugate(a);
+      if (canonical(result) !== canonical(p)) throw invalid();
+      return { operation, a, b: a.map(() => '0'), result };
+    }
     if (
       operation === 'system' &&
       (p.method === 'cramer' || p.method === 'inverse')
