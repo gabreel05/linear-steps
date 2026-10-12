@@ -34,3 +34,15 @@ export type {
 } from './gaussian';
 export type { CramerResult, InverseSystemResult } from './system-methods';
 export type { CofactorStep, AdjugateInverseResult } from './adjugate';
+export type {
+  ExactReal,
+  DotProof,
+  VectorInput,
+  VectorComponentResult,
+  DotResult,
+  NormResult,
+  NormalizeResult,
+  AngleResult,
+  ProjectionResult,
+  VectorResult,
+} from './vectors';

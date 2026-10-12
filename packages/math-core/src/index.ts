@@ -25,3 +25,14 @@ export type {
 } from '@linear-steps/contracts';
 export { solveCramer, solveByInverse } from './system-methods';
 export { invertByAdjugate } from './adjugate';
+export {
+  addVectors,
+  subtractVectors,
+  vectorBetweenPoints,
+  scaleVector,
+  dotProduct,
+  vectorNorm,
+  normalizeVector,
+  vectorAngle,
+  projectVector,
+} from './vectors';
