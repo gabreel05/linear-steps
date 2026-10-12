@@ -79,3 +79,14 @@ Executar `supabase/migrations/20261010000300_system_methods_history.sql` uma vez
 4. Na mesma conta em outro navegador, conferir e reabrir os dois registros. Em outra conta, esses registros não devem aparecer.
 
 Testes locais de SQL e de interface não substituem essa conferência hospedada entre sessões.
+
+## Inversa por adjunta
+
+Executar `supabase/migrations/20261011000100_adjugate_history.sql` uma vez, após as quatro migrações anteriores, no SQL Editor de desenvolvimento.
+
+1. Em Matriz inversa, carregar “Lista · inversa 3 × 3” e escolher Adjunta e determinante. Conferir cofatores, transposição, conclusão e os determinantes internos. Comparar com Gauss–Jordan: os resultados devem coincidir. Salvar os dois métodos com títulos distintos.
+2. Usar Matriz singular: deve informar que não há inversa, mantendo cofatores e adjunta disponíveis. Usar matriz 1 × 1 com valor 2: inversa 1/2 e menor vazio com determinante 1. Ordem 5 deve oferecer seleção explícita de Gauss–Jordan após o erro, sem resolver automaticamente.
+3. Recarregar e reabrir os registros: método e resultado devem ser restaurados. Reabrir também uma inversa antiga por Gauss–Jordan e um sistema salvo.
+4. Na mesma conta em outro navegador, reabrir a adjunta. Em outra conta, confirmar que o registro não aparece.
+
+Os testes locais verificam restauração, adulteração e isolamento SQL; o aceite hospedado deve ser confirmado separadamente.

@@ -12,10 +12,12 @@ import {
   solveByInverse,
   reduceMatrix,
   invertMatrix,
+  invertByAdjugate,
   determinant,
 } from '@linear-steps/math-core';
 import { Solution } from './Solution';
 import { SystemMethods } from './SystemMethods';
+import { AdjugateSteps } from './Adjugate';
 import { DeterminantSteps } from './Determinant';
 import { determinantLabels } from './determinant-steps';
 import { Account } from './auth/Account';
@@ -97,6 +99,9 @@ const examples = [
 export function App() {
   const [operation, setOperation] = useState<Operation>('system');
   const system = operation === 'system';
+  const [inverseMethod, setInverseMethod] = useState<
+    'gauss-jordan' | 'adjugate'
+  >('gauss-jordan');
   const [systemMethod, setSystemMethod] = useState<
     'gauss' | 'cramer' | 'inverse'
   >('gauss');
@@ -229,7 +234,9 @@ export function App() {
                   : solveGaussian(a, b)
               : operation === 'rref'
                 ? reduceMatrix(a)
-                : invertMatrix(a),
+                : inverseMethod === 'adjugate'
+                  ? invertByAdjugate(a)
+                  : invertMatrix(a),
       );
       setRevision((value) => value + 1);
       setSavable(true);
@@ -534,13 +541,20 @@ export function App() {
                         ? systemMethod
                         : basic
                           ? 'entrywise'
-                          : 'gauss-jordan'
+                          : operation === 'inverse'
+                            ? inverseMethod
+                            : 'gauss-jordan'
                     }
                     onChange={(e) => {
                       invalidate();
-                      setSystemMethod(
-                        e.target.value as 'gauss' | 'cramer' | 'inverse',
-                      );
+                      if (operation === 'inverse')
+                        setInverseMethod(
+                          e.target.value as 'gauss-jordan' | 'adjugate',
+                        );
+                      else
+                        setSystemMethod(
+                          e.target.value as 'gauss' | 'cramer' | 'inverse',
+                        );
                     }}
                   >
                     <option
@@ -566,6 +580,11 @@ export function App() {
                         </option>
                       </>
                     )}
+                    {operation === 'inverse' && (
+                      <option value="adjugate">
+                        Adjunta e determinante (até ordem 4)
+                      </option>
+                    )}
                   </select>
                 </label>
               )}
@@ -577,7 +596,9 @@ export function App() {
                       ? 'A e B devem ter as mesmas dimensões.'
                       : 'Acompanhe o cálculo de cada elemento da saída.'
                   : operation === 'inverse'
-                    ? 'A inversa exige uma matriz quadrada. O bloco identidade é acrescentado automaticamente.'
+                    ? inverseMethod === 'adjugate'
+                      ? 'Acompanhe os cofatores, a transposição e a divisão pelo determinante.'
+                      : 'A inversa exige uma matriz quadrada. O bloco identidade é acrescentado automaticamente.'
                     : operation === 'determinant'
                       ? 'Percorra os produtos, menores ou operações de linha do método escolhido.'
                       : 'Outros métodos serão adicionados nas próximas entregas.'}
@@ -598,6 +619,19 @@ export function App() {
                   Selecionar Gauss
                 </button>
               )}
+              {error &&
+                operation === 'inverse' &&
+                inverseMethod === 'adjugate' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      invalidate();
+                      setInverseMethod('gauss-jordan');
+                    }}
+                  >
+                    Selecionar Gauss-Jordan
+                  </button>
+                )}
               <button className="primary" type="submit">
                 Resolver passo a passo
               </button>
@@ -611,7 +645,9 @@ export function App() {
               Resolução
             </h2>
             {result ? (
-              result.method === 'cramer' || result.method === 'inverse' ? (
+              result.method === 'adjugate' ? (
+                <AdjugateSteps key={revision} result={result} />
+              ) : result.method === 'cramer' || result.method === 'inverse' ? (
                 <SystemMethods
                   key={revision}
                   result={result}
@@ -655,6 +691,12 @@ export function App() {
           revision={revision}
           onOpen={(saved) => {
             setOperation(saved.operation);
+            if (
+              saved.operation === 'inverse' &&
+              (saved.result.method === 'adjugate' ||
+                saved.result.method === 'gauss-jordan')
+            )
+              setInverseMethod(saved.result.method);
             if (
               saved.operation === 'system' &&
               (saved.result.method === 'gauss' ||
