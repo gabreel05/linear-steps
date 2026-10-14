@@ -1,4 +1,5 @@
 export { Rational } from './rational';
+export { solveLinearCombination, analyzeSpan } from './span';
 export { determinant } from './determinant';
 export { solveGaussian } from './gaussian';
 export { reduceMatrix, invertMatrix } from './reduction';
