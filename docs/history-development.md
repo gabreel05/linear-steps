@@ -90,3 +90,13 @@ Executar `supabase/migrations/20261011000100_adjugate_history.sql` uma vez, apó
 4. Na mesma conta em outro navegador, reabrir a adjunta. Em outra conta, confirmar que o registro não aparece.
 
 Os testes locais verificam restauração, adulteração e isolamento SQL; o aceite hospedado deve ser confirmado separadamente.
+
+## Vetores
+
+Aplicar `supabase/migrations/20261012000100_vector_history.sql` uma vez no SQL Editor de desenvolvimento, após as cinco migrações anteriores.
+
+1. Selecionar Área de cálculo → Vetores. No produto escalar, o exemplo u=(2,-1,3), v=(4,2,-1) deve resultar em 3. Percorrer os produtos e somas. Conferir soma (6,1,2), subtração (-2,-3,4), deslocamento (2,3,-4) e escalar 2/3 aplicado a u: (4/3,-2/3,2).
+2. Em Norma, carregar o exemplo (1,1): saída √2. Normalização: (1/√2,1/√2). Ângulo com (1,0): arccos(1/√2) ≈ 45°. Em Projeção, carregar o exemplo: projeção (3/2,3/2,0), resíduo (-1/2,1/2,2), distância √(9/2) e produto do resíduo pela direção igual a zero.
+3. Testar vetor zero: norma zero válida, normalização e ângulo indefinidos; direção zero na projeção indefinida. Digitar √2 como entrada deve gerar erro e foco no campo. Alterar dimensão ou operação deve limpar o resultado antigo.
+4. Salvar uma norma, um ângulo, uma projeção e um caso indefinido. Recarregar e reabrir os quatro registros, conferindo operação, entradas e etapas. O filtro Vetores deve mostrar esses cálculos. Reabrir também uma matriz ou sistema anterior.
+5. Em outro navegador com a mesma conta, reabrir os registros. Em outra conta, confirmar que eles não aparecem. Este aceite entre sessões complementa os testes locais.
