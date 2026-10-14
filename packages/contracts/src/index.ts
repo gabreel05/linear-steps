@@ -7,6 +7,7 @@ export type SerializedRational = Readonly<{
 export type SystemClassification = 'unique' | 'infinite' | 'inconsistent';
 
 export { INPUT_LIMITS } from './limits';
+export type { LinearCombinationResult, SpanBasisResult } from './span';
 export type {
   DeterminantMethod,
   DeterminantOptions,
