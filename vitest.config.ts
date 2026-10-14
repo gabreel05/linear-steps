@@ -9,5 +9,7 @@ export default defineConfig({
       'apps/web/src/**/*.test.{ts,tsx}',
     ],
     clearMocks: true,
+    // Keep jsdom/KaTeX rendering and the embedded database from competing for CPU.
+    maxWorkers: 1,
   },
 });

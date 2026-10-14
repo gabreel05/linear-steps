@@ -18,6 +18,8 @@ import {
 import { Solution } from './Solution';
 import { SystemMethods } from './SystemMethods';
 import { AdjugateSteps } from './Adjugate';
+import { VectorWorkspace } from './Vectors';
+import type { VectorFormInput } from './vector-operations';
 import { DeterminantSteps } from './Determinant';
 import { determinantLabels } from './determinant-steps';
 import { Account } from './auth/Account';
@@ -98,6 +100,8 @@ const examples = [
 
 export function App() {
   const [operation, setOperation] = useState<Operation>('system');
+  const [vectorSeed, setVectorSeed] = useState<VectorFormInput>();
+  const [vectorRevision, setVectorRevision] = useState(0);
   const system = operation === 'system';
   const [inverseMethod, setInverseMethod] = useState<
     'gauss-jordan' | 'adjugate'
@@ -258,7 +262,9 @@ export function App() {
         <a className="brand" href="#main">
           <span aria-hidden="true">[ L ]</span> Linear Steps
         </a>
-        <span className="status">Matrizes e sistemas · em desenvolvimento</span>
+        <span className="status">
+          Matrizes, sistemas e vetores · em desenvolvimento
+        </span>
       </header>
       <main id="main">
         <Account />
@@ -268,429 +274,470 @@ export function App() {
             Resolva. <span>Entenda cada etapa.</span>
           </h1>
           <p>
-            Trabalhe com matrizes e sistemas lineares e acompanhe cada operação
-            com frações exatas.
+            Trabalhe com matrizes, sistemas e vetores e acompanhe cada operação
+            com resultados exatos.
           </p>
         </section>
-        <div className="workspace">
-          <section className="input-panel" aria-labelledby="input-heading">
-            <h2 id="input-heading">{system ? 'Seu sistema' : 'Sua matriz'}</h2>
-            <label className="field">
-              Operação
-              <select
-                aria-label="Operação"
-                value={operation}
-                onChange={(event) => {
-                  invalidate();
-                  setOperation(event.target.value as Operation);
-                }}
-              >
-                <option value="system">Resolver sistema</option>
-                <option value="rref">Forma reduzida e posto</option>
-                <option value="inverse">Matriz inversa</option>
-                <option value="determinant">Determinante</option>
-                {Object.entries(basicLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="field">
-              Carregar exemplo
-              <select
-                aria-label="Carregar exemplo"
-                value=""
-                onChange={(event) => {
-                  const sample = samples[Number(event.target.value)];
-                  if (!sample) return;
-                  invalidate();
-                  setA(sample.a.map((row) => [...row]));
-                  if (basic) {
-                    setRight([
-                      ['1', '2'],
-                      ['0', '1/3'],
-                    ]);
-                    setScalar('2/3');
-                  }
-                  setB(sample.b ? [...sample.b] : sample.a.map(() => '0'));
-                }}
-              >
-                <option value="" disabled>
-                  Escolha um exemplo
-                </option>
-                {samples.map((sample, i) => (
-                  <option key={i} value={i}>
-                    {sample.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <form onSubmit={solve} noValidate>
-              <div className="dimensions">
-                {(system
-                  ? ['Equações', 'Incógnitas']
-                  : ['Linhas', 'Colunas']
-                ).map((label, k) => (
-                  <label key={label} className="field">
-                    {label}
-                    <select
-                      aria-label={label}
-                      value={k === 0 ? a.length : a[0]!.length}
-                      onChange={(event) =>
-                        resize(
-                          k === 0 ? Number(event.target.value) : a.length,
-                          k === 1 ? Number(event.target.value) : a[0]!.length,
-                        )
-                      }
-                    >
-                      {Array.from(
-                        { length: INPUT_LIMITS.dimension },
-                        (_, i) => (
-                          <option key={i} value={i + 1}>
-                            {i + 1}
-                          </option>
-                        ),
-                      )}
-                    </select>
-                  </label>
-                ))}
-              </div>
-              <div className="input-scroll">
-                <table className="input-matrix">
-                  <caption>
-                    {system
-                      ? 'Coeficientes de A e termos independentes b'
-                      : 'Elementos da matriz A'}
-                  </caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Linha</th>
-                      {a[0]!.map((_, j) => (
-                        <th scope="col" key={j}>
-                          {system ? 'x' : 'C'}
-                          {j + 1}
-                        </th>
-                      ))}
-                      {system && (
-                        <th scope="col" className="rhs-cell">
-                          b
-                        </th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {a.map((row, i) => (
-                      <tr key={i}>
-                        <th scope="row">L{i + 1}</th>
-                        {(system ? [...row, b[i]!] : row).map((value, j) => {
-                          const id = `cell-${i}-${j}`;
-                          return (
-                            <td
-                              key={j}
-                              className={j === row.length ? 'rhs-cell' : ''}
-                            >
-                              <input
-                                id={id}
-                                aria-label={`Linha ${i + 1}, ${system ? (j === row.length ? 'termo independente' : `coeficiente x${j + 1}`) : `coluna ${j + 1}`}`}
-                                aria-invalid={error?.cell === id}
-                                aria-describedby={
-                                  error?.cell === id
-                                    ? 'input-error'
-                                    : 'input-help'
-                                }
-                                value={value}
-                                maxLength={INPUT_LIMITS.scalarCharacters}
-                                autoComplete="off"
-                                spellCheck={false}
-                                onChange={(event) => {
-                                  invalidate();
-                                  if (j === row.length)
-                                    setB(
-                                      b.map((cell, k) =>
-                                        k === i ? event.target.value : cell,
-                                      ),
-                                    );
-                                  else
-                                    setA(
-                                      a.map((line, k) =>
-                                        k === i
-                                          ? line.map((cell, l) =>
-                                              l === j
-                                                ? event.target.value
-                                                : cell,
-                                            )
-                                          : line,
-                                      ),
-                                    );
-                                }}
-                              />
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {binary && (
-                <MatrixEditor
-                  errorCell={error?.cell}
-                  value={right}
-                  onChange={(value) => {
+        <label className="field">
+          Área de cálculo
+          <select
+            aria-label="Área de cálculo"
+            value={operation === 'vector' ? 'vector' : 'matrix'}
+            onChange={(e) => {
+              invalidate();
+              setOperation(e.target.value === 'vector' ? 'vector' : 'system');
+              setVectorSeed(undefined);
+            }}
+          >
+            <option value="matrix">Matrizes e sistemas</option>
+            <option value="vector">Vetores</option>
+          </select>
+        </label>
+        {operation === 'vector' ? (
+          <VectorWorkspace
+            key={vectorRevision}
+            initial={vectorSeed}
+            result={result?.method === 'components' ? result : null}
+            revision={revision}
+            onInvalidate={invalidate}
+            onResult={(value) => {
+              setResult(value);
+              setRevision((r) => r + 1);
+              setSavable(true);
+            }}
+          />
+        ) : (
+          <div className="workspace">
+            <section className="input-panel" aria-labelledby="input-heading">
+              <h2 id="input-heading">
+                {system ? 'Seu sistema' : 'Sua matriz'}
+              </h2>
+              <label className="field">
+                Operação
+                <select
+                  aria-label="Operação"
+                  value={operation}
+                  onChange={(event) => {
                     invalidate();
-                    setRight(value);
+                    setOperation(event.target.value as Operation);
                   }}
-                />
-              )}
-              {operation === 'scale' && (
-                <label className="field">
-                  Escalar
-                  <input
-                    id="scalar-input"
-                    aria-invalid={error?.cell === 'scalar-input'}
-                    aria-describedby={
-                      error?.cell === 'scalar-input'
-                        ? 'input-error'
-                        : 'input-help'
+                >
+                  <option value="system">Resolver sistema</option>
+                  <option value="rref">Forma reduzida e posto</option>
+                  <option value="inverse">Matriz inversa</option>
+                  <option value="determinant">Determinante</option>
+                  {Object.entries(basicLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="field">
+                Carregar exemplo
+                <select
+                  aria-label="Carregar exemplo"
+                  value=""
+                  onChange={(event) => {
+                    const sample = samples[Number(event.target.value)];
+                    if (!sample) return;
+                    invalidate();
+                    setA(sample.a.map((row) => [...row]));
+                    if (basic) {
+                      setRight([
+                        ['1', '2'],
+                        ['0', '1/3'],
+                      ]);
+                      setScalar('2/3');
                     }
-                    aria-label="Escalar"
-                    value={scalar}
-                    maxLength={INPUT_LIMITS.scalarCharacters}
-                    onChange={(event) => {
+                    setB(sample.b ? [...sample.b] : sample.a.map(() => '0'));
+                  }}
+                >
+                  <option value="" disabled>
+                    Escolha um exemplo
+                  </option>
+                  {samples.map((sample, i) => (
+                    <option key={i} value={i}>
+                      {sample.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <form onSubmit={solve} noValidate>
+                <div className="dimensions">
+                  {(system
+                    ? ['Equações', 'Incógnitas']
+                    : ['Linhas', 'Colunas']
+                  ).map((label, k) => (
+                    <label key={label} className="field">
+                      {label}
+                      <select
+                        aria-label={label}
+                        value={k === 0 ? a.length : a[0]!.length}
+                        onChange={(event) =>
+                          resize(
+                            k === 0 ? Number(event.target.value) : a.length,
+                            k === 1 ? Number(event.target.value) : a[0]!.length,
+                          )
+                        }
+                      >
+                        {Array.from(
+                          { length: INPUT_LIMITS.dimension },
+                          (_, i) => (
+                            <option key={i} value={i + 1}>
+                              {i + 1}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                  ))}
+                </div>
+                <div className="input-scroll">
+                  <table className="input-matrix">
+                    <caption>
+                      {system
+                        ? 'Coeficientes de A e termos independentes b'
+                        : 'Elementos da matriz A'}
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Linha</th>
+                        {a[0]!.map((_, j) => (
+                          <th scope="col" key={j}>
+                            {system ? 'x' : 'C'}
+                            {j + 1}
+                          </th>
+                        ))}
+                        {system && (
+                          <th scope="col" className="rhs-cell">
+                            b
+                          </th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {a.map((row, i) => (
+                        <tr key={i}>
+                          <th scope="row">L{i + 1}</th>
+                          {(system ? [...row, b[i]!] : row).map((value, j) => {
+                            const id = `cell-${i}-${j}`;
+                            return (
+                              <td
+                                key={j}
+                                className={j === row.length ? 'rhs-cell' : ''}
+                              >
+                                <input
+                                  id={id}
+                                  aria-label={`Linha ${i + 1}, ${system ? (j === row.length ? 'termo independente' : `coeficiente x${j + 1}`) : `coluna ${j + 1}`}`}
+                                  aria-invalid={error?.cell === id}
+                                  aria-describedby={
+                                    error?.cell === id
+                                      ? 'input-error'
+                                      : 'input-help'
+                                  }
+                                  value={value}
+                                  maxLength={INPUT_LIMITS.scalarCharacters}
+                                  autoComplete="off"
+                                  spellCheck={false}
+                                  onChange={(event) => {
+                                    invalidate();
+                                    if (j === row.length)
+                                      setB(
+                                        b.map((cell, k) =>
+                                          k === i ? event.target.value : cell,
+                                        ),
+                                      );
+                                    else
+                                      setA(
+                                        a.map((line, k) =>
+                                          k === i
+                                            ? line.map((cell, l) =>
+                                                l === j
+                                                  ? event.target.value
+                                                  : cell,
+                                              )
+                                            : line,
+                                        ),
+                                      );
+                                  }}
+                                />
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {binary && (
+                  <MatrixEditor
+                    errorCell={error?.cell}
+                    value={right}
+                    onChange={(value) => {
                       invalidate();
-                      setScalar(event.target.value);
+                      setRight(value);
                     }}
                   />
-                </label>
-              )}
-              <p id="input-help" className="hint">
-                Aceita inteiros, frações como -1/3 e decimais como 0,5. Células
-                vazias precisam ser preenchidas; use 0 quando necessário.
-              </p>
-              {operation === 'determinant' ? (
-                <>
+                )}
+                {operation === 'scale' && (
+                  <label className="field">
+                    Escalar
+                    <input
+                      id="scalar-input"
+                      aria-invalid={error?.cell === 'scalar-input'}
+                      aria-describedby={
+                        error?.cell === 'scalar-input'
+                          ? 'input-error'
+                          : 'input-help'
+                      }
+                      aria-label="Escalar"
+                      value={scalar}
+                      maxLength={INPUT_LIMITS.scalarCharacters}
+                      onChange={(event) => {
+                        invalidate();
+                        setScalar(event.target.value);
+                      }}
+                    />
+                  </label>
+                )}
+                <p id="input-help" className="hint">
+                  Aceita inteiros, frações como -1/3 e decimais como 0,5.
+                  Células vazias precisam ser preenchidas; use 0 quando
+                  necessário.
+                </p>
+                {operation === 'determinant' ? (
+                  <>
+                    <label className="field">
+                      Método
+                      <select
+                        aria-label="Método"
+                        value={detMethod}
+                        onChange={(e) => {
+                          invalidate();
+                          setDetMethod(e.target.value as DeterminantMethod);
+                        }}
+                      >
+                        {Object.entries(determinantLabels).map(
+                          ([value, label]) => (
+                            <option key={value} value={value}>
+                              {label}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    {detMethod === 'laplace' && (
+                      <div className="dimensions">
+                        <label className="field">
+                          Expandir por
+                          <select
+                            aria-label="Expandir por"
+                            value={axis}
+                            onChange={(e) => {
+                              invalidate();
+                              setAxis(e.target.value as 'row' | 'column');
+                            }}
+                          >
+                            <option value="row">Linha</option>
+                            <option value="column">Coluna</option>
+                          </select>
+                        </label>
+                        <label className="field">
+                          Índice da expansão
+                          <select
+                            aria-label="Índice da expansão"
+                            value={expansionIndex}
+                            onChange={(e) => {
+                              invalidate();
+                              setExpansionIndex(Number(e.target.value));
+                            }}
+                          >
+                            {Array.from({ length: 6 }, (_, i) => (
+                              <option key={i} value={i}>
+                                {i + 1}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+                    )}
+                    <p className="hint">
+                      Exige matriz quadrada. O método selecionado será mantido;
+                      dimensões ou índices incompatíveis serão informados ao
+                      resolver.
+                    </p>
+                  </>
+                ) : (
                   <label className="field">
                     Método
                     <select
                       aria-label="Método"
-                      value={detMethod}
+                      key={operation}
+                      value={
+                        system
+                          ? systemMethod
+                          : basic
+                            ? 'entrywise'
+                            : operation === 'inverse'
+                              ? inverseMethod
+                              : 'gauss-jordan'
+                      }
                       onChange={(e) => {
                         invalidate();
-                        setDetMethod(e.target.value as DeterminantMethod);
+                        if (operation === 'inverse')
+                          setInverseMethod(
+                            e.target.value as 'gauss-jordan' | 'adjugate',
+                          );
+                        else
+                          setSystemMethod(
+                            e.target.value as 'gauss' | 'cramer' | 'inverse',
+                          );
                       }}
                     >
-                      {Object.entries(determinantLabels).map(
-                        ([value, label]) => (
-                          <option key={value} value={value}>
-                            {label}
+                      <option
+                        value={
+                          basic
+                            ? 'entrywise'
+                            : system
+                              ? 'gauss'
+                              : 'gauss-jordan'
+                        }
+                      >
+                        {basic
+                          ? operation === 'multiply'
+                            ? 'Produto linha-coluna'
+                            : 'Cálculo por elemento'
+                          : system
+                            ? 'Eliminação de Gauss'
+                            : 'Gauss-Jordan'}
+                      </option>
+                      {system && (
+                        <>
+                          <option value="cramer">
+                            Regra de Cramer (até ordem 4)
                           </option>
-                        ),
+                          <option value="inverse">
+                            Matriz inversa (até ordem 6)
+                          </option>
+                        </>
+                      )}
+                      {operation === 'inverse' && (
+                        <option value="adjugate">
+                          Adjunta e determinante (até ordem 4)
+                        </option>
                       )}
                     </select>
                   </label>
-                  {detMethod === 'laplace' && (
-                    <div className="dimensions">
-                      <label className="field">
-                        Expandir por
-                        <select
-                          aria-label="Expandir por"
-                          value={axis}
-                          onChange={(e) => {
-                            invalidate();
-                            setAxis(e.target.value as 'row' | 'column');
-                          }}
-                        >
-                          <option value="row">Linha</option>
-                          <option value="column">Coluna</option>
-                        </select>
-                      </label>
-                      <label className="field">
-                        Índice da expansão
-                        <select
-                          aria-label="Índice da expansão"
-                          value={expansionIndex}
-                          onChange={(e) => {
-                            invalidate();
-                            setExpansionIndex(Number(e.target.value));
-                          }}
-                        >
-                          {Array.from({ length: 6 }, (_, i) => (
-                            <option key={i} value={i}>
-                              {i + 1}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-                  )}
-                  <p className="hint">
-                    Exige matriz quadrada. O método selecionado será mantido;
-                    dimensões ou índices incompatíveis serão informados ao
-                    resolver.
-                  </p>
-                </>
-              ) : (
-                <label className="field">
-                  Método
-                  <select
-                    aria-label="Método"
-                    key={operation}
-                    value={
-                      system
-                        ? systemMethod
-                        : basic
-                          ? 'entrywise'
-                          : operation === 'inverse'
-                            ? inverseMethod
-                            : 'gauss-jordan'
-                    }
-                    onChange={(e) => {
-                      invalidate();
-                      if (operation === 'inverse')
-                        setInverseMethod(
-                          e.target.value as 'gauss-jordan' | 'adjugate',
-                        );
-                      else
-                        setSystemMethod(
-                          e.target.value as 'gauss' | 'cramer' | 'inverse',
-                        );
-                    }}
-                  >
-                    <option
-                      value={
-                        basic ? 'entrywise' : system ? 'gauss' : 'gauss-jordan'
-                      }
-                    >
-                      {basic
-                        ? operation === 'multiply'
-                          ? 'Produto linha-coluna'
-                          : 'Cálculo por elemento'
-                        : system
-                          ? 'Eliminação de Gauss'
-                          : 'Gauss-Jordan'}
-                    </option>
-                    {system && (
-                      <>
-                        <option value="cramer">
-                          Regra de Cramer (até ordem 4)
-                        </option>
-                        <option value="inverse">
-                          Matriz inversa (até ordem 6)
-                        </option>
-                      </>
-                    )}
-                    {operation === 'inverse' && (
-                      <option value="adjugate">
-                        Adjunta e determinante (até ordem 4)
-                      </option>
-                    )}
-                  </select>
-                </label>
-              )}
-              <p className="hint">
-                {basic
-                  ? operation === 'multiply'
-                    ? 'As colunas de A devem corresponder às linhas de B.'
-                    : binary
-                      ? 'A e B devem ter as mesmas dimensões.'
-                      : 'Acompanhe o cálculo de cada elemento da saída.'
-                  : operation === 'inverse'
-                    ? inverseMethod === 'adjugate'
-                      ? 'Acompanhe os cofatores, a transposição e a divisão pelo determinante.'
-                      : 'A inversa exige uma matriz quadrada. O bloco identidade é acrescentado automaticamente.'
-                    : operation === 'determinant'
-                      ? 'Percorra os produtos, menores ou operações de linha do método escolhido.'
-                      : 'Outros métodos serão adicionados nas próximas entregas.'}
-              </p>
-              {error && (
-                <p className="error" id="input-error" role="alert">
-                  {error.message}
+                )}
+                <p className="hint">
+                  {basic
+                    ? operation === 'multiply'
+                      ? 'As colunas de A devem corresponder às linhas de B.'
+                      : binary
+                        ? 'A e B devem ter as mesmas dimensões.'
+                        : 'Acompanhe o cálculo de cada elemento da saída.'
+                    : operation === 'inverse'
+                      ? inverseMethod === 'adjugate'
+                        ? 'Acompanhe os cofatores, a transposição e a divisão pelo determinante.'
+                        : 'A inversa exige uma matriz quadrada. O bloco identidade é acrescentado automaticamente.'
+                      : operation === 'determinant'
+                        ? 'Percorra os produtos, menores ou operações de linha do método escolhido.'
+                        : 'Outros métodos serão adicionados nas próximas entregas.'}
                 </p>
-              )}
-              {error && system && systemMethod !== 'gauss' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    invalidate();
-                    setSystemMethod('gauss');
-                  }}
-                >
-                  Selecionar Gauss
-                </button>
-              )}
-              {error &&
-                operation === 'inverse' &&
-                inverseMethod === 'adjugate' && (
+                {error && (
+                  <p className="error" id="input-error" role="alert">
+                    {error.message}
+                  </p>
+                )}
+                {error && system && systemMethod !== 'gauss' && (
                   <button
                     type="button"
                     onClick={() => {
                       invalidate();
-                      setInverseMethod('gauss-jordan');
+                      setSystemMethod('gauss');
                     }}
                   >
-                    Selecionar Gauss-Jordan
+                    Selecionar Gauss
                   </button>
                 )}
-              <button className="primary" type="submit">
-                Resolver passo a passo
-              </button>
-            </form>
-          </section>
-          <section
-            className="solution-panel"
-            aria-labelledby="solution-heading"
-          >
-            <h2 id="solution-heading" tabIndex={-1} ref={heading}>
-              Resolução
-            </h2>
-            {result ? (
-              result.method === 'adjugate' ? (
-                <AdjugateSteps key={revision} result={result} />
-              ) : result.method === 'cramer' || result.method === 'inverse' ? (
-                <SystemMethods
-                  key={revision}
-                  result={result}
-                  onChooseGauss={() => {
-                    invalidate();
-                    setSystemMethod('gauss');
-                  }}
-                />
-              ) : result.method === 'entrywise' ? (
-                <MatrixSteps key={revision} result={result} />
-              ) : 'proof' in result ? (
-                <DeterminantSteps key={revision} result={result} />
+                {error &&
+                  operation === 'inverse' &&
+                  inverseMethod === 'adjugate' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        invalidate();
+                        setInverseMethod('gauss-jordan');
+                      }}
+                    >
+                      Selecionar Gauss-Jordan
+                    </button>
+                  )}
+                <button className="primary" type="submit">
+                  Resolver passo a passo
+                </button>
+              </form>
+            </section>
+            <section
+              className="solution-panel"
+              aria-labelledby="solution-heading"
+            >
+              <h2 id="solution-heading" tabIndex={-1} ref={heading}>
+                Resolução
+              </h2>
+              {result ? (
+                result.method === 'components' ? null : result.method ===
+                  'adjugate' ? (
+                  <AdjugateSteps key={revision} result={result} />
+                ) : result.method === 'cramer' ||
+                  result.method === 'inverse' ? (
+                  <SystemMethods
+                    key={revision}
+                    result={result}
+                    onChooseGauss={() => {
+                      invalidate();
+                      setSystemMethod('gauss');
+                    }}
+                  />
+                ) : result.method === 'entrywise' ? (
+                  <MatrixSteps key={revision} result={result} />
+                ) : 'proof' in result ? (
+                  <DeterminantSteps key={revision} result={result} />
+                ) : (
+                  <Solution key={revision} result={result} />
+                )
               ) : (
-                <Solution key={revision} result={result} />
-              )
-            ) : (
-              <div className="empty-state">
-                <span aria-hidden="true">
-                  {system
-                    ? '[ A | b ]'
-                    : operation === 'inverse'
-                      ? '[ A | I ]'
-                      : '[ A ]'}
-                </span>
-                <h3>
-                  {system
-                    ? 'O caminho começa com seu sistema.'
-                    : 'O caminho começa com sua matriz.'}
-                </h3>
-                <p>
-                  Confira os valores e clique em “Resolver passo a passo”. Ao
-                  editar as entradas, resolva novamente para ver as novas
-                  etapas.
-                </p>
-              </div>
-            )}
-          </section>
-        </div>
+                <div className="empty-state">
+                  <span aria-hidden="true">
+                    {system
+                      ? '[ A | b ]'
+                      : operation === 'inverse'
+                        ? '[ A | I ]'
+                        : '[ A ]'}
+                  </span>
+                  <h3>
+                    {system
+                      ? 'O caminho começa com seu sistema.'
+                      : 'O caminho começa com sua matriz.'}
+                  </h3>
+                  <p>
+                    Confira os valores e clique em “Resolver passo a passo”. Ao
+                    editar as entradas, resolva novamente para ver as novas
+                    etapas.
+                  </p>
+                </div>
+              )}
+            </section>
+          </div>
+        )}
         <History
           draft={result && savable ? { operation, result } : null}
           revision={revision}
           onOpen={(saved) => {
             setOperation(saved.operation);
+            setVectorSeed(saved.vectorInput);
+            setVectorRevision((v) => v + 1);
             if (
               saved.operation === 'inverse' &&
               (saved.result.method === 'adjugate' ||
@@ -704,10 +751,12 @@ export function App() {
                 saved.result.method === 'inverse')
             )
               setSystemMethod(saved.result.method);
-            setA(saved.a);
-            setB(saved.b);
-            setRight(saved.right ?? [['0']]);
-            setScalar(saved.scalar ?? '1');
+            if (saved.operation !== 'vector') {
+              setA(saved.a);
+              setB(saved.b);
+              setRight(saved.right ?? [['0']]);
+              setScalar(saved.scalar ?? '1');
+            }
             if (saved.determinantOptions) {
               setDetMethod(saved.determinantOptions.method);
               if (saved.determinantOptions.method === 'laplace') {

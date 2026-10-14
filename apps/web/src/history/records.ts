@@ -15,11 +15,17 @@ import { calculateBasic, isBasic, basicLabels } from '../matrix-operations';
 import type { BasicOperation } from '../matrix-operations';
 import { INPUT_LIMITS, type DeterminantOptions } from '@linear-steps/contracts';
 import type { CalculationResult } from '../math-format';
+import {
+  calculateVector,
+  isVectorOperation,
+  type VectorFormInput,
+} from '../vector-operations';
 
 export type Operation =
-  'system' | 'rref' | 'inverse' | 'determinant' | BasicOperation;
+  'system' | 'rref' | 'inverse' | 'determinant' | 'vector' | BasicOperation;
 export const labels: Record<Operation, string> = {
   ...basicLabels,
+  vector: 'Vetores',
   system: 'Sistema linear',
   rref: 'Forma reduzida',
   inverse: 'Matriz inversa',
@@ -32,6 +38,7 @@ export type Summary = {
   created_at: string;
 };
 export type SavedInput = {
+  vectorInput?: VectorFormInput;
   operation: Operation;
   a: string[][];
   b: string[];
@@ -128,6 +135,46 @@ export function reopen(value: unknown): SavedInput {
     if (new TextEncoder().encode(JSON.stringify(row.payload)).length > 1048576)
       throw invalid();
     const p = object(row.payload);
+    if (operation === 'vector') {
+      if (
+        row.schema_version !== 1 ||
+        p.schemaVersion !== 1 ||
+        row.method !== 'components' ||
+        p.method !== 'components' ||
+        row.algorithm_version !== 'vector-arithmetic-1' ||
+        p.algorithmVersion !== 'vector-arithmetic-1'
+      )
+        throw invalid();
+      const input = object(p.input);
+      if (!isVectorOperation(input.operation)) throw invalid();
+      const left = vector(input.vector ?? input.left);
+      const right =
+        input.right === undefined ? left.map(() => '0') : vector(input.right);
+      const scalar =
+        input.scalar === undefined ? '1' : vector([input.scalar])[0]!;
+      const vectorInput = { operation: input.operation, left, right, scalar };
+      const result = calculateVector(vectorInput);
+      let checked = p;
+      // Exact fields must match; transcendental approximations may differ by a few ulps across engines.
+      if ('approximation' in result) {
+        const approximation = object(p.approximation);
+        if (
+          typeof approximation.value !== 'number' ||
+          !Number.isFinite(approximation.value) ||
+          Math.abs(approximation.value - result.approximation.value) > 1e-10
+        )
+          throw invalid();
+        checked = {
+          ...p,
+          approximation: {
+            ...approximation,
+            value: result.approximation.value,
+          },
+        };
+      }
+      if (canonical(result) !== canonical(checked)) throw invalid();
+      return { operation, a: [left], b: ['0'], vectorInput, result };
+    }
     if (operation === 'inverse' && p.method === 'adjugate') {
       if (
         row.schema_version !== 1 ||

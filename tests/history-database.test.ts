@@ -1,4 +1,9 @@
 import { readFile } from 'node:fs/promises';
+import {
+  calculateVector,
+  vectorLabels,
+  type VectorOperation,
+} from '../apps/web/src/vector-operations';
 import { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
@@ -140,6 +145,20 @@ beforeAll(async () => {
   expect(
     (await db.query('select payload from public.calculations')).rows,
   ).toEqual([{ payload: solution }]);
+  await db.exec('reset role');
+  await db.exec(
+    await readFile(
+      new URL(
+        '../supabase/migrations/20261012000100_vector_history.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  await identity(alice);
+  expect(
+    (await db.query('select payload from public.calculations')).rows,
+  ).toEqual([{ payload: solution }]);
 }, 60000);
 beforeEach(async () => {
   await db.exec('reset role; truncate public.calculations');
@@ -188,6 +207,70 @@ it('stores adjugate snapshots with owner isolation and rejects malformed proofs'
 });
 afterAll(async () => {
   await db?.close();
+});
+
+it.each(Object.keys(vectorLabels) as VectorOperation[])(
+  'stores vector operation %s and isolates owners',
+  async (operation) => {
+    const payload = calculateVector({
+      operation,
+      left: ['1', '2'],
+      right: ['1', '0'],
+      scalar: '2/3',
+    });
+    await db.query(
+      insertSql,
+      values(payload, 'vector', 'components', 'vector-arithmetic-1'),
+    );
+    await identity(bob);
+    expect(
+      (await db.query('select * from public.calculations')).rows,
+    ).toHaveLength(0);
+    await db.query('delete from public.calculations');
+    await identity(alice);
+    expect(
+      (await db.query('select payload from public.calculations')).rows,
+    ).toEqual([{ payload }]);
+  },
+);
+it.each(['normalize', 'angle', 'projection'] as const)(
+  'stores undefined vector %s without a fictional result',
+  async (operation) => {
+    const payload = calculateVector({
+      operation,
+      left: ['0'],
+      right: ['0'],
+      scalar: '1',
+    });
+    await db.query(
+      insertSql,
+      values(payload, 'vector', 'components', 'vector-arithmetic-1'),
+    );
+    expect(
+      (await db.query('select payload from public.calculations')).rows,
+    ).toEqual([{ payload }]);
+  },
+);
+it('rejects malformed vector envelopes', async () => {
+  const payload = calculateVector({
+    operation: 'angle',
+    left: ['1', '0'],
+    right: ['1', '1'],
+    scalar: '1',
+  });
+  for (const p of [
+    { ...payload, result: null },
+    { ...payload, approximation: null },
+    { ...payload, status: 'bad' },
+    { ...payload, input: { ...payload.input, operation: 'bad' } },
+    { ...payload, algorithmVersion: 'bad' },
+  ])
+    await expect(
+      db.query(
+        insertSql,
+        values(p, 'vector', 'components', 'vector-arithmetic-1'),
+      ),
+    ).rejects.toThrow();
 });
 
 describe('calculation history SQL permissions and storage', () => {
