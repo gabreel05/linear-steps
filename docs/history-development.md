@@ -100,3 +100,13 @@ Aplicar `supabase/migrations/20261012000100_vector_history.sql` uma vez no SQL E
 3. Testar vetor zero: norma zero válida, normalização e ângulo indefinidos; direção zero na projeção indefinida. Digitar √2 como entrada deve gerar erro e foco no campo. Alterar dimensão ou operação deve limpar o resultado antigo.
 4. Salvar uma norma, um ângulo, uma projeção e um caso indefinido. Recarregar e reabrir os quatro registros, conferindo operação, entradas e etapas. O filtro Vetores deve mostrar esses cálculos. Reabrir também uma matriz ou sistema anterior.
 5. Em outro navegador com a mesma conta, reabrir os registros. Em outra conta, confirmar que eles não aparecem. Este aceite entre sessões complementa os testes locais.
+
+## Espaços vetoriais
+
+Aplicar `supabase/migrations/20261014000100_span_history.sql` uma vez no SQL Editor de desenvolvimento, após as seis migrações anteriores.
+
+1. Selecionar Área de cálculo → Espaços vetoriais. Resolver o exemplo inicial em LI/LD e bases: LD, dimensão 2, base formada por v1 e v3; não gera R³. Percorrer as etapas de Gauss e conferir pivôs e linhas alteradas.
+2. Em Combinação linear, o mesmo exemplo tem infinitas soluções: x=(3,0,2)+t(-2,1,0). O exemplo Alvo fora do espaço gerado deve indicar que b não pertence ao espaço. Base de R² deve produzir coeficientes (2,3), e em LI/LD deve ser reconhecida como base de R².
+3. Espaço zero deve indicar dimensão zero e base vazia. Entrada inválida deve focar o componente; editar valores, quantidade, dimensão ou operação deve invalidar o resultado antigo.
+4. Salvar uma análise dependente, uma base, uma combinação com infinitas soluções e uma impossível. Recarregar, filtrar Espaços vetoriais e reabrir: conferir modo, entradas, conclusão e etapas. Reabrir também um vetor e um sistema antigos.
+5. Em outro navegador com a mesma conta, conferir os quatro registros. Em outra conta, confirmar que não aparecem.

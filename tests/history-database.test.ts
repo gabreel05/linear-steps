@@ -7,6 +7,8 @@ import {
 import { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
+  analyzeSpan,
+  solveLinearCombination,
   determinant,
   addMatrices,
   subtractMatrices,
@@ -150,6 +152,20 @@ beforeAll(async () => {
     await readFile(
       new URL(
         '../supabase/migrations/20261012000100_vector_history.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  await identity(alice);
+  expect(
+    (await db.query('select payload from public.calculations')).rows,
+  ).toEqual([{ payload: solution }]);
+  await db.exec('reset role');
+  await db.exec(
+    await readFile(
+      new URL(
+        '../supabase/migrations/20261014000100_span_history.sql',
         import.meta.url,
       ),
       'utf8',
@@ -663,4 +679,50 @@ it('rejects malformed system-method envelopes', async () => {
     await expect(
       db.query(insertSql, values(p, 'system', 'cramer', 'cramer-1')),
     ).rejects.toThrow();
+});
+
+it('stores span cases, preserves isolation and rejects invalid envelopes', async () => {
+  const cases = [
+    analyzeSpan([
+      ['1', '0'],
+      ['0', '1'],
+    ]),
+    analyzeSpan([['0', '0']]),
+    analyzeSpan([
+      ['1', '2'],
+      ['2', '4'],
+    ]),
+    solveLinearCombination([['1']], ['2']),
+    solveLinearCombination([['0']], ['0']),
+    solveLinearCombination([['0']], ['1']),
+  ];
+  for (const payload of cases) {
+    await db.exec('reset role; truncate public.calculations');
+    await identity(alice);
+    await db.query(insertSql, values(payload, 'span', 'gauss', 'span-basis-1'));
+    await identity(bob);
+    expect(
+      (await db.query('select * from public.calculations')).rows,
+    ).toHaveLength(0);
+    await identity(alice);
+    expect(
+      (await db.query('select payload from public.calculations')).rows,
+    ).toEqual([{ payload }]);
+    for (const bad of [
+      { ...payload, operation: 'bad' },
+      { ...payload, system: {} },
+      { ...payload, system: { ...payload.system, steps: null } },
+      { ...payload, algorithmVersion: 'bad' },
+      payload.operation === 'span-basis'
+        ? { ...payload, independent: !payload.independent }
+        : { ...payload, belongsToSpan: !payload.belongsToSpan },
+    ]) {
+      await expect(
+        db.query(
+          insertSql,
+          values(bad, 'span', 'gauss', 'span-basis-1', otherId),
+        ),
+      ).rejects.toThrow();
+    }
+  }
 });

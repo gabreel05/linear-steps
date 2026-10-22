@@ -1,3 +1,4 @@
+import { calculateSpan, type SpanFormInput } from '../span-operations';
 import {
   Rational,
   parseScalar,
@@ -22,10 +23,17 @@ import {
 } from '../vector-operations';
 
 export type Operation =
-  'system' | 'rref' | 'inverse' | 'determinant' | 'vector' | BasicOperation;
+  | 'span'
+  | 'system'
+  | 'rref'
+  | 'inverse'
+  | 'determinant'
+  | 'vector'
+  | BasicOperation;
 export const labels: Record<Operation, string> = {
   ...basicLabels,
   vector: 'Vetores',
+  span: 'Espaços vetoriais',
   system: 'Sistema linear',
   rref: 'Forma reduzida',
   inverse: 'Matriz inversa',
@@ -39,6 +47,7 @@ export type Summary = {
 };
 export type SavedInput = {
   vectorInput?: VectorFormInput;
+  spanInput?: SpanFormInput;
   operation: Operation;
   a: string[][];
   b: string[];
@@ -135,6 +144,32 @@ export function reopen(value: unknown): SavedInput {
     if (new TextEncoder().encode(JSON.stringify(row.payload)).length > 1048576)
       throw invalid();
     const p = object(row.payload);
+    if (operation === 'span') {
+      if (
+        row.schema_version !== 1 ||
+        p.schemaVersion !== 1 ||
+        row.method !== 'gauss' ||
+        p.method !== 'gauss' ||
+        row.algorithm_version !== 'span-basis-1' ||
+        p.algorithmVersion !== 'span-basis-1'
+      )
+        throw invalid();
+      if (p.operation !== 'span-basis' && p.operation !== 'linear-combination')
+        throw invalid();
+      const vectors = matrix(p.vectors);
+      const target =
+        p.operation === 'linear-combination'
+          ? vector(p.target)
+          : vectors[0]!.map(() => '0');
+      const spanInput: SpanFormInput = {
+        operation: p.operation,
+        vectors,
+        target,
+      };
+      const result = calculateSpan(spanInput);
+      if (canonical(result) !== canonical(p)) throw invalid();
+      return { operation, a: vectors, b: target, spanInput, result };
+    }
     if (operation === 'vector') {
       if (
         row.schema_version !== 1 ||
