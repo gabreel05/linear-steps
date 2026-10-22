@@ -19,6 +19,8 @@ import { Solution } from './Solution';
 import { SystemMethods } from './SystemMethods';
 import { AdjugateSteps } from './Adjugate';
 import { VectorWorkspace } from './Vectors';
+import { SpanWorkspace } from './Spaces';
+import type { SpanFormInput } from './span-operations';
 import type { VectorFormInput } from './vector-operations';
 import { DeterminantSteps } from './Determinant';
 import { determinantLabels } from './determinant-steps';
@@ -100,6 +102,7 @@ const examples = [
 
 export function App() {
   const [operation, setOperation] = useState<Operation>('system');
+  const [spanSeed, setSpanSeed] = useState<SpanFormInput>();
   const [vectorSeed, setVectorSeed] = useState<VectorFormInput>();
   const [vectorRevision, setVectorRevision] = useState(0);
   const system = operation === 'system';
@@ -282,18 +285,45 @@ export function App() {
           Área de cálculo
           <select
             aria-label="Área de cálculo"
-            value={operation === 'vector' ? 'vector' : 'matrix'}
+            value={
+              operation === 'span'
+                ? 'span'
+                : operation === 'vector'
+                  ? 'vector'
+                  : 'matrix'
+            }
             onChange={(e) => {
               invalidate();
-              setOperation(e.target.value === 'vector' ? 'vector' : 'system');
+              setOperation(
+                e.target.value === 'span'
+                  ? 'span'
+                  : e.target.value === 'vector'
+                    ? 'vector'
+                    : 'system',
+              );
+              setSpanSeed(undefined);
               setVectorSeed(undefined);
             }}
           >
             <option value="matrix">Matrizes e sistemas</option>
             <option value="vector">Vetores</option>
+            <option value="span">Espaços vetoriais</option>
           </select>
         </label>
-        {operation === 'vector' ? (
+        {operation === 'span' ? (
+          <SpanWorkspace
+            key={vectorRevision}
+            initial={spanSeed}
+            result={result?.algorithmVersion === 'span-basis-1' ? result : null}
+            revision={revision}
+            onInvalidate={invalidate}
+            onResult={(value) => {
+              setResult(value);
+              setRevision((r) => r + 1);
+              setSavable(true);
+            }}
+          />
+        ) : operation === 'vector' ? (
           <VectorWorkspace
             key={vectorRevision}
             initial={vectorSeed}
@@ -687,6 +717,7 @@ export function App() {
                 Resolução
               </h2>
               {result ? (
+                result.algorithmVersion === 'span-basis-1' ||
                 result.method === 'components' ? null : result.method ===
                   'adjugate' ? (
                   <AdjugateSteps key={revision} result={result} />
@@ -737,6 +768,7 @@ export function App() {
           onOpen={(saved) => {
             setOperation(saved.operation);
             setVectorSeed(saved.vectorInput);
+            setSpanSeed(saved.spanInput);
             setVectorRevision((v) => v + 1);
             if (
               saved.operation === 'inverse' &&
@@ -751,7 +783,7 @@ export function App() {
                 saved.result.method === 'inverse')
             )
               setSystemMethod(saved.result.method);
-            if (saved.operation !== 'vector') {
+            if (saved.operation !== 'vector' && saved.operation !== 'span') {
               setA(saved.a);
               setB(saved.b);
               setRight(saved.right ?? [['0']]);

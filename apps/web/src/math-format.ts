@@ -1,3 +1,4 @@
+import type { SpanResult } from './span-operations';
 import type {
   VectorResult,
   AdjugateInverseResult,
@@ -17,6 +18,7 @@ import type {
 } from '@linear-steps/contracts';
 
 export type CalculationResult =
+  | SpanResult
   | VectorResult
   | AdjugateInverseResult
   | CramerResult
