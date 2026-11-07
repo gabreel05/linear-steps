@@ -1,4 +1,5 @@
 export { Rational } from './rational';
+export { crossProduct, triangleFromPoints } from './cross-product';
 export { solveLinearCombination, analyzeSpan } from './span';
 export { determinant } from './determinant';
 export { solveGaussian } from './gaussian';
